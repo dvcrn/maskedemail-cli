@@ -58,10 +58,17 @@ func (client *Client) sendRequest(r *APIRequest) (*APIResponse, error) {
 	return &apiRes, nil
 }
 
-func (client *Client) CreateMaskedEmail(forDomain string) (*MethodResponseCreateItem, error) {
+// CreateMaskedEmail creates a new masked email for the given forDomain domain.
+// If `enabled` is set to false, will only create a pending email and needs to be confirmed before it's usable.
+func (client *Client) CreateMaskedEmail(forDomain string, enabled bool) (*MethodResponseCreateItem, error) {
+	state := ""
+	if enabled {
+		state = "enabled"
+	}
+
 	mc := MethodCall{
 		MethodName: "MaskedEmail/set",
-		Payload:    NewMethodCallCreate(client.accID, client.appName, forDomain),
+		Payload:    NewMethodCallCreate(client.accID, client.appName, forDomain, state),
 		Payload2:   "0",
 	}
 

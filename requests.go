@@ -64,13 +64,13 @@ type UpdateState struct {
 // accID is the users account ID.
 // appName is the name to identify the app that created the maskedemail.
 // domain is the label to identify where the email is intended for.
-func NewMethodCallCreate(accID, appName, domain string) MethodCallCreate {
+func NewMethodCallCreate(accID, appName, domain string, state string) MethodCallCreate {
 	mesp := MethodCallCreate{}
 	mesp.AccountID = accID
 	mesp.Create = map[string]CreatePayload{
 		appName: {
 			ForDomain: domain,
-			State:     "enabled",
+			State:     state,
 		},
 	}
 
