@@ -5,7 +5,7 @@ Simple CLI to create Fastmail masked emails
 ## Setup
 
 ```
-go install github.com/dvcrn/maskedemail-cli
+go get github.com/dvcrn/maskedemail-cli
 ```
 
 ### Authentication
