@@ -46,13 +46,14 @@ func (r *MethodCall) MarshalJSON() ([]byte, error) {
   ]
 }
 */
-type CreateForDomain struct {
+type CreatePayload struct {
 	ForDomain string `json:"forDomain"`
+	State     string `json:"state,omitempty"`
 }
 
 type MethodCallCreate struct {
-	AccountID string                     `json:"accountId,omitempty"`
-	Create    map[string]CreateForDomain `json:"create,omitempty"`
+	AccountID string                   `json:"accountId,omitempty"`
+	Create    map[string]CreatePayload `json:"create,omitempty"`
 }
 
 type UpdateState struct {
@@ -66,9 +67,10 @@ type UpdateState struct {
 func NewMethodCallCreate(accID, appName, domain string) MethodCallCreate {
 	mesp := MethodCallCreate{}
 	mesp.AccountID = accID
-	mesp.Create = map[string]CreateForDomain{
+	mesp.Create = map[string]CreatePayload{
 		appName: {
 			ForDomain: domain,
+			State:     "enabled",
 		},
 	}
 

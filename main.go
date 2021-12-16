@@ -15,8 +15,6 @@ var flagAccountID = flag.String("accountid", "", "fastmail account id")
 func init() {
 	flag.Parse()
 
-	fmt.Println()
-
 	if *flagToken == "" {
 		log.Println("-token flag is not set")
 		flag.Usage()
@@ -50,10 +48,10 @@ func main() {
 		log.Fatalf("err while creating maskedemail: %v", err)
 	}
 
-	_, err = client.ConfirmMaskedEmail(createRes.ID)
-	if err != nil {
-		log.Fatalf("err while confirming maskedemail: %v", err)
-	}
+	// _, err = client.ConfirmMaskedEmail(createRes.ID)
+	// if err != nil {
+	// 	log.Fatalf("err while confirming maskedemail: %v", err)
+	// }
 
 	fmt.Println(createRes.Email)
 }
