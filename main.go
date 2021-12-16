@@ -5,25 +5,60 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/mitchellh/mapstructure"
 )
 
 // ["MaskedEmail/set", idkyet, 0]
 
-const auth = ""
-const accID = ""
-
 const apiEndpoint = "https://api.fastmail.com/jmap/api/"
-const appName = "myapp"
+
+var flagDomain = flag.String("domain", "", "the domain to create the alias for")
+var flagAppname = flag.String("appname", "maskedemail-cli", "the appname to identify the creator")
+var flagToken = flag.String("token", "", "the token to authenticate with")
+var flagAccountID = flag.String("accountid", "", "fastmail account id")
+
+func init() {
+	flag.Parse()
+
+	fmt.Println()
+
+	if *flagToken == "" {
+		log.Println("-token flag is not set")
+		flag.Usage()
+		os.Exit(0)
+	}
+
+	if *flagAccountID == "" {
+		log.Println("-accountid flag is not set")
+		flag.Usage()
+		os.Exit(0)
+	}
+
+	if *flagDomain == "" {
+		log.Println("-domain flag is not set")
+		flag.Usage()
+		os.Exit(0)
+	}
+
+	if len(flag.Args()) != 1 {
+		log.Println("no argument given. currently supported: create")
+		flag.Usage()
+		os.Exit(0)
+	}
+}
 
 func main() {
-	flag.Parse()
+	// action := flag.Arg(0)
+	fmt.Println(*flagAppname)
+	// return
 
 	r := MethodCall{
 		MethodName: "MaskedEmail/set",
-		Payload:    NewMethodCallCreate(accID, appName, "hoge.com"),
+		Payload:    NewMethodCallCreate(*flagAccountID, *flagAppname, *flagDomain),
 		Payload2:   "0",
 	}
 
@@ -40,7 +75,17 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("%v", string(reqJson))
+	fmt.Println("first req")
+	// TODO: for debug. remove me.
+	func(v interface{}) {
+		j, err := json.MarshalIndent(v, "", "  ")
+		if err != nil {
+			fmt.Printf("%v\n", err)
+			return
+		}
+		buf := bytes.NewBuffer(j)
+		fmt.Printf("%v\n", buf.String())
+	}(cmer)
 
 	req, err := http.NewRequest("POST", apiEndpoint, bytes.NewBuffer(reqJson))
 	if err != nil {
@@ -48,7 +93,7 @@ func main() {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("authorization", fmt.Sprintf("Bearer %s", auth))
+	req.Header.Set("authorization", fmt.Sprintf("Bearer %s", *flagToken))
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -89,9 +134,14 @@ func main() {
 		fmt.Printf("%v\n", buf.String())
 	}(pl)
 
+	createdItem, err := pl.GetCreatedItem()
+	if err != nil {
+		panic(err)
+	}
+
 	r = MethodCall{
 		MethodName: "MaskedEmail/set",
-		Payload:    NewMethodCallUpdate(accID, pl.Created["myapp"].ID),
+		Payload:    NewMethodCallUpdate(*flagAccountID, createdItem.ID),
 		Payload2:   "0",
 	}
 
@@ -126,7 +176,7 @@ func main() {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("authorization", fmt.Sprintf("Bearer %s", auth))
+	req.Header.Set("authorization", fmt.Sprintf("Bearer %s", *flagToken))
 
 	res, err = http.DefaultClient.Do(req)
 	if err != nil {
