@@ -1,17 +1,11 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
 	"os"
 )
-
-// ["MaskedEmail/set", idkyet, 0]
-
-const apiEndpoint = "https://api.fastmail.com/jmap/api/"
 
 var flagDomain = flag.String("domain", "", "the domain to create the alias for")
 var flagAppname = flag.String("appname", "maskedemail-cli", "the appname to identify the creator")
@@ -49,44 +43,17 @@ func init() {
 }
 
 func main() {
-	// action := flag.Arg(0)
-	fmt.Println(*flagAppname)
-	// return
-
 	client := NewClient(*flagAccountID, *flagToken, *flagAppname)
 
-	res, err := client.CreateMaskedEmail(*flagDomain)
+	createRes, err := client.CreateMaskedEmail(*flagDomain)
 	if err != nil {
-		panic(err)
+		log.Fatalf("err while creating maskedemail: %v", err)
 	}
 
-	r := MethodCall{
-		MethodName: "MaskedEmail/set",
-		Payload:    NewMethodCallUpdate(*flagAccountID, res.ID),
-		Payload2:   "0",
-	}
-
-	cmer := APIRequest{
-		Using: []string{
-			"urn:ietf:params:jmap:core",
-			"https://www.fastmail.com/dev/maskedemail",
-		},
-		MethodCalls: []MethodCall{r},
-	}
-
-	sendRes, err := client.sendRequest(&cmer)
+	_, err = client.ConfirmMaskedEmail(createRes.ID)
 	if err != nil {
-		panic(err)
+		log.Fatalf("err while confirming maskedemail: %v", err)
 	}
 
-	// TODO: for debug. remove me.
-	func(v interface{}) {
-		j, err := json.MarshalIndent(v, "", "  ")
-		if err != nil {
-			fmt.Printf("%v\n", err)
-			return
-		}
-		buf := bytes.NewBuffer(j)
-		fmt.Printf("%v\n", buf.String())
-	}(sendRes)
+	fmt.Println(createRes.Email)
 }

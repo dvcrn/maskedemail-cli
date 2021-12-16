@@ -75,13 +75,13 @@ func (client *Client) CreateMaskedEmail(forDomain string) (*MethodResponseCreate
 
 	res, err := client.sendRequest(&request)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	var pl MethodResponseCreate
+	var pl MethodResponseMaskedEmailSet
 	err = mapstructure.Decode(res.MethodResponsesParsed[0].Payload, &pl)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	created, err := pl.GetCreatedItem()
@@ -90,4 +90,33 @@ func (client *Client) CreateMaskedEmail(forDomain string) (*MethodResponseCreate
 	}
 
 	return &created, nil
+}
+
+func (client *Client) ConfirmMaskedEmail(emailID string) (*MethodResponseCreateItem, error) {
+	r := MethodCall{
+		MethodName: "MaskedEmail/set",
+		Payload:    NewMethodCallUpdateState(*flagAccountID, emailID),
+		Payload2:   "0",
+	}
+
+	apiRequest := APIRequest{
+		Using: []string{
+			"urn:ietf:params:jmap:core",
+			"https://www.fastmail.com/dev/maskedemail",
+		},
+		MethodCalls: []MethodCall{r},
+	}
+
+	res, err := client.sendRequest(&apiRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	var pl MethodResponseMaskedEmailSet
+	err = mapstructure.Decode(res.MethodResponsesParsed[0].Payload, &pl)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
 }

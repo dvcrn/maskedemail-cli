@@ -49,12 +49,16 @@ type MethodResponseCreateItem struct {
 	URL           string `mapstructure:"url"`
 }
 
-type MethodResponseCreate struct {
+type MethodResponseMaskedEmailSet struct {
 	AccountID string                              `mapstructure:"accountId"`
 	Created   map[string]MethodResponseCreateItem `mapstructure:"created"`
+	Updated   map[string]interface{}              `mapstructure:"updated"`
+	Destroyed []interface{}                       `mapstructure:"destroyed"`
+	NewState  interface{}                         `mapstructure:"newState"`
+	OldState  interface{}                         `mapstructure:"oldState"`
 }
 
-func (cr *MethodResponseCreate) GetCreatedItem() (MethodResponseCreateItem, error) {
+func (cr *MethodResponseMaskedEmailSet) GetCreatedItem() (MethodResponseCreateItem, error) {
 	for _, item := range cr.Created {
 		return item, nil
 	}

@@ -80,9 +80,9 @@ type MethodCallUpdate struct {
 	Update    map[string]UpdateState `json:"update,omitempty"`
 }
 
-// NewMethodCallUpdate creates a new method call to update a maskedemail.
+// NewMethodCallUpdateState creates a new method call to update a maskedemail.
 // This is for example used when a temporary email is converted into a finalized one.
-func NewMethodCallUpdate(accID, alias string) MethodCallUpdate {
+func NewMethodCallUpdateState(accID, alias string) MethodCallUpdate {
 	mesp := MethodCallUpdate{}
 	mesp.AccountID = accID
 	mesp.Update = map[string]UpdateState{
