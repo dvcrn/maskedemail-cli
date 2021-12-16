@@ -1,6 +1,8 @@
 # Fastmail MaskedEmail CLI
 
-Simple CLI to create Fastmail masked emails
+CLI to create Fastmail Masked Emails whenever you need to
+
+![showcase](./showcase.gif)
 
 ## Setup
 
