@@ -12,6 +12,8 @@ go get github.com/dvcrn/maskedemail-cli
 
 ### Authentication
 
+- These here are the **old** instructions. I didn't get to update these yet, but you need a **refresh token** and not the access token, since the access token expires quickly -
+
 1. Navigate to fastmail.com and login
 2. Open the dev tools and search for a request to api.fastmail.com
 
