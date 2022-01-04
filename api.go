@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/mitchellh/mapstructure"
 )
@@ -12,16 +13,20 @@ import (
 const apiEndpoint = "https://api.fastmail.com/jmap/api/"
 
 type Client struct {
-	auth    string
-	accID   string
-	appName string
+	auth         string
+	refreshToken string
+	clientID     string
+	accID        string
+	appName      string
 }
 
-func NewClient(accID, token, appName string) *Client {
+func NewClient(accID, token, appName, clientID string) *Client {
 	return &Client{
-		accID:   accID,
-		auth:    token,
-		appName: appName,
+		accID:        accID,
+		auth:         "",
+		refreshToken: token,
+		appName:      appName,
+		clientID:     clientID,
 	}
 }
 
@@ -97,6 +102,36 @@ func (client *Client) CreateMaskedEmail(forDomain string, enabled bool) (*Method
 	}
 
 	return &created, nil
+}
+
+func (client *Client) RefreshToken() (*RefreshTokenResponse, error) {
+	val := url.Values{}
+	val.Add("grant_type", "refresh_token")
+	val.Add("client_id", client.clientID)
+	val.Add("refresh_token", client.refreshToken)
+
+	res, err := http.PostForm("https://api.fastmail.com/oauth/refresh", val)
+	if err != nil {
+		return nil, err
+	}
+
+	buf := &bytes.Buffer{}
+	_, err = buf.ReadFrom(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("%s\n", buf.String())
+
+	var tokenRes RefreshTokenResponse
+	err = json.Unmarshal(buf.Bytes(), &tokenRes)
+	if err != nil {
+		return nil, err
+	}
+
+	client.auth = tokenRes.AccessToken
+
+	return &tokenRes, nil
 }
 
 func (client *Client) ConfirmMaskedEmail(emailID string) (*MethodResponseCreateItem, error) {

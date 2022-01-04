@@ -9,7 +9,7 @@ import (
 )
 
 var flagAppname = flag.String("appname", "maskedemail-cli", "the appname to identify the creator")
-var flagToken = flag.String("token", "", "the token to authenticate with")
+var flagToken = flag.String("token", "", "the refresh token to authenticate with")
 var flagAccountID = flag.String("accountid", "", "fastmail account id")
 var action actionType = actionTypeUnknown
 
@@ -57,13 +57,18 @@ func init() {
 }
 
 func main() {
-	client := NewClient(*flagAccountID, *flagToken, *flagAppname)
+	client := NewClient(*flagAccountID, *flagToken, *flagAppname, "35c941ae")
 
 	switch action {
 	case actionTypeCreate:
 		if flag.Arg(1) == "" {
 			log.Println("Usage: create <domain>")
 			return
+		}
+
+		_, err := client.RefreshToken()
+		if err != nil {
+			panic(err)
 		}
 
 		createRes, err := client.CreateMaskedEmail(flag.Arg(1), true)

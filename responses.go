@@ -65,3 +65,11 @@ func (cr *MethodResponseMaskedEmailSet) GetCreatedItem() (MethodResponseCreateIt
 
 	return MethodResponseCreateItem{}, errors.New("no items returned")
 }
+
+type RefreshTokenResponse struct {
+	Scope        string `json:"scope,omitempty"`
+	RefreshToken string `json:"refresh_token,omitempty"`
+	TokenType    string `json:"token_type,omitempty"`
+	ExpiresIn    int    `json:"expires_in,omitempty"`
+	AccessToken  string `json:"access_token,omitempty"`
+}
