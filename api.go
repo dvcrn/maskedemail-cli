@@ -121,8 +121,6 @@ func (client *Client) RefreshToken() (*RefreshTokenResponse, error) {
 		return nil, err
 	}
 
-	fmt.Printf("%s\n", buf.String())
-
 	var tokenRes RefreshTokenResponse
 	err = json.Unmarshal(buf.Bytes(), &tokenRes)
 	if err != nil {
