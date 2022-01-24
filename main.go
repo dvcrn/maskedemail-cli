@@ -18,6 +18,7 @@ type actionType string
 const (
 	actionTypeUnknown = ""
 	actionTypeCreate  = "create"
+	actionTypeAuth    = "auth"
 )
 
 func init() {
@@ -31,28 +32,30 @@ func init() {
 		fmt.Println("  maskedemail-cli create <domain>")
 	}
 
-	if *flagToken == "" {
-		log.Println("-token flag is not set")
-		flag.Usage()
-		os.Exit(0)
-	}
+	// if *flagToken == "" {
+	// 	log.Println("-token flag is not set")
+	// 	flag.Usage()
+	// 	os.Exit(0)
+	// }
 
-	if *flagAccountID == "" {
-		log.Println("-accountid flag is not set")
-		flag.Usage()
-		os.Exit(0)
-	}
+	// if *flagAccountID == "" {
+	// 	log.Println("-accountid flag is not set")
+	// 	flag.Usage()
+	// 	os.Exit(0)
+	// }
 
-	if len(flag.Args()) < 1 {
-		log.Println("no argument given. currently supported: create")
-		flag.Usage()
-		os.Exit(0)
-	}
+	// if len(flag.Args()) < 1 {
+	// 	log.Println("no argument given. currently supported: create")
+	// 	flag.Usage()
+	// 	os.Exit(0)
+	// }
 
 	switch strings.ToLower(flag.Arg(0)) {
 	case
 		"create":
 		action = actionTypeCreate
+	case "auth":
+		action = actionTypeAuth
 	}
 }
 
@@ -60,6 +63,9 @@ func main() {
 	client := NewClient(*flagAccountID, *flagToken, *flagAppname, "35c941ae")
 
 	switch action {
+	case actionTypeAuth:
+		fmt.Printf("auth")
+		Authenticate()
 	case actionTypeCreate:
 		if flag.Arg(1) == "" {
 			log.Println("Usage: create <domain>")
