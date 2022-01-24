@@ -1,11 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/cookiejar"
+	"os"
 )
 
 const authenticateURL = "https://www.fastmail.com/jmap/authenticate/"
@@ -37,6 +40,18 @@ type AuthenticatePasswordResponse struct {
 	} `json:"methods,omitempty"`
 }
 
+type AuthenticateResponse struct {
+	AccountType     string            `json:"accountType,omitempty"`
+	SigningId       string            `json:"signingId,omitempty"`
+	SigningKey      string            `json:"signingKey,omitempty"`
+	IsAdmin         bool              `json:"isAdmin,omitempty"`
+	SessionKey      string            `json:"sessionKey,omitempty"`
+	PrimaryAccounts map[string]string `json:"primaryAccounts,omitempty"`
+	AccessToken     string            `json:"accessToken,omitempty"`
+	ApiUrl          string            `json:"apiUrl,omitempty"`
+	UserID          string            `json:"userId,omitempty"`
+}
+
 type AuthenticateTotpRequest struct {
 	LoginId  string `json:"loginId,omitempty"`
 	Remember bool   `json:"remember,omitempty"`
@@ -44,31 +59,15 @@ type AuthenticateTotpRequest struct {
 	Value    string `json:"value,omitempty"`
 }
 
-type AuthenticateResponse struct {
-	AccessToken string `json:"access_token,omitempty"`
-}
-
-func sendAuthRequest(client *http.Client, data interface{}, targetIf interface{}) error {
-
-	// TODO: for debug. remove me.
-	func(v interface{}) {
-		j, err := json.MarshalIndent(v, "", "  ")
-		if err != nil {
-			fmt.Printf("%v\n", err)
-			return
-		}
-		buf := bytes.NewBuffer(j)
-		fmt.Printf("%v\n", buf.String())
-	}(data)
-
+func sendAuthRequest(client *http.Client, data interface{}, targetIf interface{}) (*bytes.Buffer, error) {
 	reqJson, err := json.Marshal(data)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	req, err := http.NewRequest("POST", authenticateURL, bytes.NewBuffer(reqJson))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Origin", "https://www.fastmail.com")
@@ -88,29 +87,31 @@ func sendAuthRequest(client *http.Client, data interface{}, targetIf interface{}
 
 	res, err := client.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	buf := &bytes.Buffer{}
 	_, err = buf.ReadFrom(res.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	fmt.Printf("got: %v\n", buf.String())
 
-	err = json.Unmarshal(buf.Bytes(), &targetIf)
-	if err != nil {
-		return err
+	if targetIf != nil {
+		err = json.Unmarshal(buf.Bytes(), &targetIf)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return err
+	return buf, err
 }
 
-func Authenticate() {
+func Authenticate(username, password string) (*AuthenticateResponse, error) {
 	cookieJar, err := cookiejar.New(nil)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	client := &http.Client{
 		Jar: cookieJar,
@@ -118,29 +119,73 @@ func Authenticate() {
 
 	res, err := client.Get(authenticateURL)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	buf := &bytes.Buffer{}
 	_, err = buf.ReadFrom(res.Body)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	fmt.Printf("got: %v\n", buf.String())
 
 	var authUsernameRes AuthenticateUsernameResponse
-	if err := sendAuthRequest(client, AuthenticateUsernameRequest{Username: "mail@david.coffe"}, &authUsernameRes); err != nil {
-		panic(err)
+	if _, err := sendAuthRequest(client, AuthenticateUsernameRequest{Username: username}, &authUsernameRes); err != nil {
+		return nil, err
 	}
 
-	var authPassRes AuthenticatePasswordResponse
-	if err := sendAuthRequest(client, AuthenticatePasswordRequest{
+	var authPassRes AuthenticateResponse
+	buf, err = sendAuthRequest(client, AuthenticatePasswordRequest{
 		LoginId:  authUsernameRes.LoginId,
-		Remember: false,
+		Remember: true,
 		Type:     "password",
-		Value:    "x",
-	}, &authPassRes); err != nil {
-		panic(err)
+		Value:    password,
+	}, &authPassRes)
+
+	if err != nil {
+		return nil, err
 	}
+
+	// check if we got a access token
+	if authPassRes.AccessToken != "" {
+		return &authPassRes, nil
+	}
+
+	// try to parse into other struct
+	var totpReq AuthenticatePasswordResponse
+	err = json.Unmarshal(buf.Bytes(), &totpReq)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(totpReq.Methods) > 0 {
+		foundTotp := false
+		for _, method := range totpReq.Methods {
+			if method.Type == "totp" {
+				foundTotp = true
+				break
+			}
+		}
+
+		if foundTotp {
+			fmt.Print("enter your 2fa token: ")
+			input := bufio.NewScanner(os.Stdin)
+			input.Scan()
+
+			var authRes AuthenticateResponse
+			_, err = sendAuthRequest(client, AuthenticateTotpRequest{
+				LoginId:  authUsernameRes.LoginId,
+				Remember: true,
+				Type:     "totp",
+				Value:    input.Text(),
+			}, &authRes)
+
+			fmt.Println("access token")
+			fmt.Println(authRes.AccessToken)
+			return &authRes, nil
+		}
+	}
+
+	return nil, errors.New("login failed")
 }

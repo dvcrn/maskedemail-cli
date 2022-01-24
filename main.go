@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -9,8 +11,9 @@ import (
 )
 
 var flagAppname = flag.String("appname", "maskedemail-cli", "the appname to identify the creator")
-var flagToken = flag.String("token", "", "the refresh token to authenticate with")
+var flagToken = flag.String("token", "", "the token to authenticate with")
 var flagAccountID = flag.String("accountid", "", "fastmail account id")
+var flagUseRefresh = flag.Bool("refresh", false, "whether the token is a refresh token")
 var action actionType = actionTypeUnknown
 
 type actionType string
@@ -30,30 +33,32 @@ func init() {
 		fmt.Println("")
 		fmt.Println("Commands:")
 		fmt.Println("  maskedemail-cli create <domain>")
+		fmt.Println("  maskedemail-cli auth <email> <password>")
 	}
 
-	// if *flagToken == "" {
-	// 	log.Println("-token flag is not set")
-	// 	flag.Usage()
-	// 	os.Exit(0)
-	// }
-
-	// if *flagAccountID == "" {
-	// 	log.Println("-accountid flag is not set")
-	// 	flag.Usage()
-	// 	os.Exit(0)
-	// }
-
-	// if len(flag.Args()) < 1 {
-	// 	log.Println("no argument given. currently supported: create")
-	// 	flag.Usage()
-	// 	os.Exit(0)
-	// }
+	if len(flag.Args()) < 1 {
+		log.Println("no argument given. currently supported: create, auth")
+		flag.Usage()
+		os.Exit(0)
+	}
 
 	switch strings.ToLower(flag.Arg(0)) {
 	case
 		"create":
 		action = actionTypeCreate
+
+		if *flagToken == "" {
+			log.Println("-token flag is not set")
+			flag.Usage()
+			os.Exit(0)
+		}
+
+		if *flagAccountID == "" {
+			log.Println("-accountid flag is not set")
+			flag.Usage()
+			os.Exit(0)
+		}
+
 	case "auth":
 		action = actionTypeAuth
 	}
@@ -64,17 +69,38 @@ func main() {
 
 	switch action {
 	case actionTypeAuth:
-		fmt.Printf("auth")
-		Authenticate()
+		if len(flag.Args()) != 3 {
+			log.Println("Usage: auth <email> <password>")
+			return
+		}
+
+		res, err := Authenticate(flag.Args()[1], flag.Args()[2])
+		if err != nil {
+			fmt.Println("authentication failed:", err)
+			return
+		}
+
+		func(v interface{}) {
+			j, err := json.MarshalIndent(v, "", "  ")
+			if err != nil {
+				fmt.Printf("%v\n", err)
+				return
+			}
+			buf := bytes.NewBuffer(j)
+			fmt.Printf("%v\n", buf.String())
+		}(res)
+
 	case actionTypeCreate:
 		if flag.Arg(1) == "" {
 			log.Println("Usage: create <domain>")
 			return
 		}
 
-		_, err := client.RefreshToken()
-		if err != nil {
-			panic(err)
+		if *flagUseRefresh {
+			_, err := client.RefreshToken()
+			if err != nil {
+				panic(err)
+			}
 		}
 
 		createRes, err := client.CreateMaskedEmail(flag.Arg(1), true)
@@ -88,10 +114,4 @@ func main() {
 		fmt.Println("action not found")
 		flag.Usage()
 	}
-
-	// _, err = client.ConfirmMaskedEmail(createRes.ID)
-	// if err != nil {
-	// 	log.Fatalf("err while confirming maskedemail: %v", err)
-	// }
-
 }

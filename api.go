@@ -23,7 +23,7 @@ type Client struct {
 func NewClient(accID, token, appName, clientID string) *Client {
 	return &Client{
 		accID:        accID,
-		auth:         "",
+		auth:         token,
 		refreshToken: token,
 		appName:      appName,
 		clientID:     clientID,
