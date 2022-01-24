@@ -12,15 +12,33 @@ go get github.com/dvcrn/maskedemail-cli
 
 ### Authentication
 
-- These here are the **old** instructions. I didn't get to update these yet, but you need a **refresh token** and not the access token, since the access token expires quickly -
+You have 2 ways to authenticate with the fastmail API
 
-1. Navigate to fastmail.com and login
-2. Open the dev tools and search for a request to api.fastmail.com
+#### 1. Username + Password
 
-![img](./screenshot.png)
+The easiest is to use the built-in auth command to get your access token + accountid
 
-3. Copy the authorization bearer header, this is your `token`
-4. Copy the ?u=xxxxx part, prefix it with "u" this is your `accountID`. Eg. if the paramter is cb504155, your userid is ucb504155
+```
+$ maskedemail-cli auth <email> <password>
+authentication successful!
+accountID:  xxxx
+token:  yyyy
+```
+
+#### 2. Extracting the refresh token from 1Password
+
+This is technically the better method because the refresh-token does not expire.
+Use a reverse proxy like Proxyman, mitmproxy or charles, then start your browser and create a masked email
+
+Find the refresh token inside the body when the 1Password extension first connects to the fastmail API and write that down
+
+Specify the token as usual with the `-token` flag, but also set `-refresh` to tell the CLI that the token is a refresh token.
+
+#### Why is auth so complicated??
+
+The Masked Email capability is not available through the normal JMAP API yet, so if we were to create a token with the JMAP API scope, it wouldn't be able to use Masked Emails.
+
+I contacted the fastmail team and while there are plans to move this into general availablity, it's not gonna be anytime soon (though likely this year).
 
 ## Usage
 
@@ -33,17 +51,21 @@ Flags:
         fastmail account id
   -appname string
         the appname to identify the creator (default "maskedemail-cli")
+  -refresh
+        whether the token is a refresh token
   -token string
         the token to authenticate with
 
 Commands:
   maskedemail-cli create <domain>
+  maskedemail-cli auth <email> <password>
+
 ```
 
 Example:
 
 ```
-maskedemail-cli -accountid xxxx -token abcdef12345 create facebook.com
+$ maskedemail-cli -accountid xxxx -token abcdef12345 create facebook.com
 ```
 
 ## License
