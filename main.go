@@ -80,15 +80,23 @@ func main() {
 			return
 		}
 
-		func(v interface{}) {
-			j, err := json.MarshalIndent(v, "", "  ")
-			if err != nil {
-				fmt.Printf("%v\n", err)
-				return
-			}
-			buf := bytes.NewBuffer(j)
-			fmt.Printf("%v\n", buf.String())
-		}(res)
+		// find acc with jmap:mail capability
+		if accountID, ok := res.PrimaryAccounts["urn:ietf:params:jmap:mail"]; ok {
+			fmt.Println("authentication successful!")
+			fmt.Println("accountID: ", accountID)
+			fmt.Println("token: ", res.AccessToken)
+		} else {
+			fmt.Println("could not find correct accountID. Try one of these")
+			func(v interface{}) {
+				j, err := json.MarshalIndent(v, "", "  ")
+				if err != nil {
+					fmt.Printf("%v\n", err)
+					return
+				}
+				buf := bytes.NewBuffer(j)
+				fmt.Printf("%v\n", buf.String())
+			}(res.PrimaryAccounts)
+		}
 
 	case actionTypeCreate:
 		if flag.Arg(1) == "" {
