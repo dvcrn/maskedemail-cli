@@ -170,12 +170,14 @@ func Authenticate(username, password string) (*AuthenticateResponse, error) {
 			input.Scan()
 
 			var authRes AuthenticateResponse
-			_, err = sendAuthRequest(client, AuthenticateTotpRequest{
+			if _, err := sendAuthRequest(client, AuthenticateTotpRequest{
 				LoginId:  authUsernameRes.LoginId,
 				Remember: true,
 				Type:     "totp",
 				Value:    input.Text(),
-			}, &authRes)
+			}, &authRes); err != nil {
+				return nil, err
+			}
 
 			return &authRes, nil
 		}
