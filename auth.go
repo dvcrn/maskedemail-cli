@@ -96,8 +96,6 @@ func sendAuthRequest(client *http.Client, data interface{}, targetIf interface{}
 		return nil, err
 	}
 
-	fmt.Printf("got: %v\n", buf.String())
-
 	if targetIf != nil {
 		err = json.Unmarshal(buf.Bytes(), &targetIf)
 		if err != nil {
@@ -127,8 +125,6 @@ func Authenticate(username, password string) (*AuthenticateResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Printf("got: %v\n", buf.String())
 
 	var authUsernameRes AuthenticateUsernameResponse
 	if _, err := sendAuthRequest(client, AuthenticateUsernameRequest{Username: username}, &authUsernameRes); err != nil {
@@ -181,8 +177,6 @@ func Authenticate(username, password string) (*AuthenticateResponse, error) {
 				Value:    input.Text(),
 			}, &authRes)
 
-			fmt.Println("access token")
-			fmt.Println(authRes.AccessToken)
 			return &authRes, nil
 		}
 	}
