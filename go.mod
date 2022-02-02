@@ -1,4 +1,4 @@
-module github.com/dvcrn/maskedemailcli
+module github.com/dvcrn/maskedemail-cli
 
 go 1.16
 
