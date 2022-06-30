@@ -22,7 +22,7 @@ You have 2 ways to authenticate with the fastmail API
 
 #### 1. Username + Password
 
-The easiest is to use the built-in auth command to get your access token + accountid
+The easiest is to use the built-in auth command to get your access token + accountid. However the token does eventually expire and you'll need to re-auth, so I'd recommend using the 1Password method explained in 2. instead
 
 ```
 $ maskedemail-cli auth <email> <password>
