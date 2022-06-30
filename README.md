@@ -10,6 +10,12 @@ CLI to create Fastmail Masked Emails for whenever you need to
 go get github.com/dvcrn/maskedemail-cli
 ```
 
+or newer Go versions
+
+```
+go install github.com/dvcrn/maskedemail-cli@latest
+```
+
 ### Authentication
 
 You have 2 ways to authenticate with the fastmail API
