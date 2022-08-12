@@ -121,6 +121,19 @@ func (client *Client) Session() (*SessionResource, error) {
 	return &session, nil
 }
 
+func (client *Client) accIDOrDefault(session Session, accID string) (string, error) {
+	if accID != "" {
+		return accID, nil
+	}
+
+	accID = session.DefaultAccountForCapability(maskedEmailCapabilityURI)
+	if accID == "" {
+		return "", errNoAccountID
+	}
+
+	return accID, nil
+}
+
 // CreateMaskedEmail creates a new masked email for the given forDomain domain.
 //
 // If `accID` is the empty string, the primary account for Masked Email will be
@@ -132,17 +145,15 @@ func (client *Client) CreateMaskedEmail(
 	accID string,
 	forDomain string,
 	enabled bool,
-) (*MethodResponseCreateItem, error) {
+) (*MaskedEmail, error) {
 	state := ""
 	if enabled {
 		state = "enabled"
 	}
 
-	if accID == "" {
-		accID = session.DefaultAccountForCapability(maskedEmailCapabilityURI)
-		if accID == "" {
-			return nil, errNoAccountID
-		}
+	accID, err := client.accIDOrDefault(session, accID)
+	if err != nil {
+		return nil, err
 	}
 
 	mc := MethodCall{
@@ -178,21 +189,36 @@ func (client *Client) CreateMaskedEmail(
 	return &created, nil
 }
 
-func (client *Client) ConfirmMaskedEmail(
+func (client *Client) EnableMaskedEmail(
 	session Session,
 	accID string,
 	emailID string,
-) (*MethodResponseCreateItem, error) {
-	if accID == "" {
-		accID = session.DefaultAccountForCapability(maskedEmailCapabilityURI)
-		if accID == "" {
-			return nil, errNoAccountID
-		}
+) (*MethodResponseMaskedEmailSet, error) {
+	return client.UpdateMaskedEmailState(session, accID, emailID, MaskedEmailStateEnabled)
+}
+
+func (client *Client) DisableMaskedEmail(
+	session Session,
+	accID string,
+	emailID string,
+) (*MethodResponseMaskedEmailSet, error) {
+	return client.UpdateMaskedEmailState(session, accID, emailID, MaskedEmailStateDisabled)
+}
+
+func (client *Client) UpdateMaskedEmailState(
+	session Session,
+	accID string,
+	emailID string,
+	state MaskedEmailState,
+) (*MethodResponseMaskedEmailSet, error) {
+	accID, err := client.accIDOrDefault(session, accID)
+	if err != nil {
+		return nil, err
 	}
 
 	r := MethodCall{
 		MethodName: "MaskedEmail/set",
-		Payload:    NewMethodCallUpdateState(accID, emailID),
+		Payload:    NewMethodCallUpdateState(accID, emailID, state),
 		Payload2:   "0",
 	}
 
@@ -215,5 +241,45 @@ func (client *Client) ConfirmMaskedEmail(
 		return nil, err
 	}
 
+	// TODO: fix return value
+	pl.GetCreatedItem()
+
 	return nil, nil
+}
+
+func (client *Client) GetAllMaskedEmails(
+	session Session,
+	accID string,
+) ([]*MaskedEmail, error) {
+	accID, err := client.accIDOrDefault(session, accID)
+	if err != nil {
+		return nil, err
+	}
+
+	r := MethodCall{
+		MethodName: "MaskedEmail/get",
+		Payload:    NewMethodCallGetAll(accID),
+		Payload2:   "0",
+	}
+
+	apiRequest := APIRequest{
+		Using: []string{
+			"urn:ietf:params:jmap:core",
+			maskedEmailCapabilityURI,
+		},
+		MethodCalls: []MethodCall{r},
+	}
+
+	res, err := client.sendRequest(session, &apiRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	var pl MethodResponseGetAll
+	err = mapstructure.Decode(res.MethodResponsesParsed[0].Payload, &pl)
+	if err != nil {
+		return nil, err
+	}
+
+	return pl.List, nil
 }

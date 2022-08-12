@@ -7,6 +7,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"text/tabwriter"
 )
 
 var flagAppname = flag.String("appname", "maskedemail-cli", "the appname to identify the creator")
@@ -20,6 +21,9 @@ const (
 	actionTypeUnknown = ""
 	actionTypeCreate  = "create"
 	actionTypeSession = "session"
+	actionTypeDisable = "disable"
+	actionTypeEnable  = "enable"
+	actionTypeList    = "list"
 )
 
 func init() {
@@ -31,11 +35,20 @@ func init() {
 		fmt.Println("")
 		fmt.Println("Commands:")
 		fmt.Println("  maskedemail-cli create <domain>")
+		fmt.Println("  maskedemail-cli enable <maskedemail>")
+		fmt.Println("  maskedemail-cli disable <maskedemail>")
 		fmt.Println("  maskedemail-cli session")
+		fmt.Println("  maskedemail-cli list")
 	}
 
 	if len(flag.Args()) < 1 {
-		log.Println("no argument given. currently supported: create, session")
+		log.Println("no argument given. currently supported: create, session, disable, enable")
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	if *flagToken == "" {
+		log.Println("-token flag is not set")
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -45,14 +58,17 @@ func init() {
 		"create":
 		action = actionTypeCreate
 
-		if *flagToken == "" {
-			log.Println("-token flag is not set")
-			flag.Usage()
-			os.Exit(1)
-		}
-
 	case "session":
 		action = actionTypeSession
+
+	case "disable":
+		action = actionTypeDisable
+
+	case "enable":
+		action = actionTypeEnable
+
+	case "list":
+		action = actionTypeList
 	}
 }
 
@@ -112,6 +128,94 @@ func main() {
 		}
 
 		fmt.Println(createRes.Email)
+
+	case actionTypeDisable:
+		if flag.Arg(1) == "" {
+			log.Fatalln("Usage: disable <maskedemail>")
+		}
+
+		session, err := client.Session()
+		if err != nil {
+			log.Fatalf("initializing session: %v", err)
+		}
+
+		allAliases, err := client.GetAllMaskedEmails(session, *flagAccountID)
+		if err != nil {
+			log.Fatalf("err while getting maskedemails: %v", err)
+		}
+
+		// find the alias to disable
+		var alias *MaskedEmail
+		for _, a := range allAliases {
+			if a.Email == flag.Arg(1) {
+				alias = a
+				break
+			}
+		}
+
+		if alias == nil {
+			log.Fatalf("maskedemail %s not found", flag.Arg(1))
+		}
+
+		_, err = client.UpdateMaskedEmailState(session, *flagAccountID, alias.ID, MaskedEmailStateDisabled)
+		if err != nil {
+			log.Fatalf("err while updating maskedemail: %v", err)
+		}
+
+		fmt.Printf("disabled email: %s\n", flag.Arg(1))
+
+	case actionTypeEnable:
+		if flag.Arg(1) == "" {
+			log.Fatalln("Usage: enable <email>")
+		}
+
+		session, err := client.Session()
+		if err != nil {
+			log.Fatalf("initializing session: %v", err)
+		}
+
+		allAliases, err := client.GetAllMaskedEmails(session, *flagAccountID)
+		if err != nil {
+			log.Fatalf("err while updating maskedemail: %v", err)
+		}
+
+		// find the alias to disable
+		var alias *MaskedEmail
+		for _, a := range allAliases {
+			if a.Email == flag.Arg(1) {
+				alias = a
+				break
+			}
+		}
+
+		if alias == nil {
+			log.Fatalf("maskedemail %s not found", flag.Arg(1))
+		}
+
+		_, err = client.UpdateMaskedEmailState(session, *flagAccountID, alias.ID, MaskedEmailStateEnabled)
+		if err != nil {
+			log.Fatalf("err while creating maskedemail: %v", err)
+		}
+
+		fmt.Printf("enabled maskedemail: %s\n", flag.Arg(1))
+
+	case actionTypeList:
+		session, err := client.Session()
+		if err != nil {
+			log.Fatalf("initializing session: %v", err)
+		}
+
+		maskedEmails, err := client.GetAllMaskedEmails(session, *flagAccountID)
+		if err != nil {
+			log.Fatalf("err while creating maskedemail: %v", err)
+		}
+
+		w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
+		fmt.Fprintln(w, "Masked Email\tFor Domain\tState\tLast Email At\t")
+		for _, email := range maskedEmails {
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", email.Email, email.ForDomain, email.State, email.LastMessageAt)
+		}
+		w.Flush()
 
 	default:
 		fmt.Println("action not found")

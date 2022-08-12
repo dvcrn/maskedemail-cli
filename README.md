@@ -41,7 +41,10 @@ Flags:
 
 Commands:
   maskedemail-cli create <domain>
+  maskedemail-cli enable <masked email>
+  maskedemail-cli disable <masked email>
   maskedemail-cli session
+  maskedemail-cli list
 
 ```
 
@@ -49,6 +52,8 @@ Example:
 
 ```
 $ maskedemail-cli -token abcdef12345 create facebook.com
+$ maskedemail-cli -token abcdef12345 enable 123@mydomain.com
+$ maskedemail-cli -token abcdef12345 disable 123@mydomain.com
 ```
 
 ## License

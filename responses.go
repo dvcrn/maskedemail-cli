@@ -38,7 +38,7 @@ func (gr *APIResponse) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-type MethodResponseCreateItem struct {
+type MaskedEmail struct {
 	CreatedAt     string `mapstructure:"createdAt"`
 	CreatedBy     string `mapstructure:"createdBy"`
 	Description   string `mapstructure:"description"`
@@ -47,23 +47,31 @@ type MethodResponseCreateItem struct {
 	LastMessageAt string `mapstructure:"lastMessageAt"`
 	State         string `mapstructure:"state"`
 	URL           string `mapstructure:"url"`
+	ForDomain     string `mapstructure:"forDomain"`
 }
 
 type MethodResponseMaskedEmailSet struct {
-	AccountID string                              `mapstructure:"accountId"`
-	Created   map[string]MethodResponseCreateItem `mapstructure:"created"`
-	Updated   map[string]interface{}              `mapstructure:"updated"`
-	Destroyed []interface{}                       `mapstructure:"destroyed"`
-	NewState  interface{}                         `mapstructure:"newState"`
-	OldState  interface{}                         `mapstructure:"oldState"`
+	AccountID string                 `mapstructure:"accountId"`
+	Created   map[string]MaskedEmail `mapstructure:"created"`
+	Updated   map[string]interface{} `mapstructure:"updated"`
+	Destroyed []interface{}          `mapstructure:"destroyed"`
+	NewState  interface{}            `mapstructure:"newState"`
+	OldState  interface{}            `mapstructure:"oldState"`
 }
 
-func (cr *MethodResponseMaskedEmailSet) GetCreatedItem() (MethodResponseCreateItem, error) {
+func (cr *MethodResponseMaskedEmailSet) GetCreatedItem() (MaskedEmail, error) {
 	for _, item := range cr.Created {
 		return item, nil
 	}
 
-	return MethodResponseCreateItem{}, errors.New("no items returned")
+	return MaskedEmail{}, errors.New("no items returned")
+}
+
+type MethodResponseGetAll struct {
+	AccountID string         `mapstructure:"accountId"`
+	NotFound  []interface{}  `mapstructure:"notFound"`
+	State     string         `mapstructure:"state"`
+	List      []*MaskedEmail `mapstructure:"list"`
 }
 
 // Account is a collection of data in the JMAP API.

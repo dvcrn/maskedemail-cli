@@ -78,6 +78,13 @@ func NewMethodCallCreate(accID, appName, domain string, state string) MethodCall
 	return mesp
 }
 
+type MaskedEmailState string
+
+const (
+	MaskedEmailStateEnabled  MaskedEmailState = "enabled"
+	MaskedEmailStateDisabled                  = "disabled"
+)
+
 type MethodCallUpdate struct {
 	AccountID string                 `json:"accountId,omitempty"`
 	Update    map[string]UpdateState `json:"update,omitempty"`
@@ -85,14 +92,61 @@ type MethodCallUpdate struct {
 
 // NewMethodCallUpdateState creates a new method call to update a maskedemail.
 // This is for example used when a temporary email is converted into a finalized one.
-func NewMethodCallUpdateState(accID, alias string) MethodCallUpdate {
+func NewMethodCallUpdateState(accID, alias string, state MaskedEmailState) MethodCallUpdate {
 	mesp := MethodCallUpdate{}
 	mesp.AccountID = accID
 	mesp.Update = map[string]UpdateState{
 		alias: {
-			State: "enabled",
+			State: string(state),
 		},
 	}
+
+	return mesp
+}
+
+// MethodCallGetAll is a method call to get all maskedemails for a user.
+// Request:
+//    "methodCalls" : [
+//      [
+//         "MaskedEmail/get",
+//         {
+//            "accountId" : "xxx",
+//            "ids" : null
+//         },
+//         "0"
+//      ]
+//   ],
+//
+// Response:
+//   "methodResponses" : [
+//      [
+//         "MaskedEmail/get",
+//         {
+//            "accountId" : xxx",
+//            "list" : [
+//               {
+//                  "createdAt" : "2021-09-29T23:02:05Z",
+//                  "createdBy" : "",
+//                  "description" : "Masked Email Example (yellow.asdfkjasdf)",
+//                  "email" : "foo@bar.com",
+//                  "forDomain" : "fastmail.com",
+//                  "id" : "someid",
+//                  "lastMessageAt" : "2021-09-29T23:02:06Z",
+//                  "state" : "deleted",
+//                  "url" : null
+//               }, ...
+//            ]
+//         },
+//      ]
+//   ]
+//
+type MethodCallGetAll struct {
+	AccountID string `json:"accountId,omitempty"`
+}
+
+func NewMethodCallGetAll(accID string) MethodCallGetAll {
+	mesp := MethodCallGetAll{}
+	mesp.AccountID = accID
 
 	return mesp
 }
