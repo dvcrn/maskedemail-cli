@@ -17,34 +17,13 @@ go install github.com/dvcrn/maskedemail-cli@latest
 ```
 
 ### Authentication
+You'll need to [create a FastMail API token](https://www.fastmail.com/settings/security/tokens?u=1eb14002).
 
-You have 2 ways to authenticate with the fastmail API
+> **🔒 The only necessary scope is "Masked Email".**
+>
+> Always use unique API tokens with the minimum scope(s) necessary for different purposes.
 
-#### 1. Username + Password
-
-The easiest is to use the built-in auth command to get your access token + accountid. However the token does eventually expire and you'll need to re-auth, so I'd recommend using the 1Password method explained in 2. instead
-
-```
-$ maskedemail-cli auth <email> <password>
-authentication successful!
-accountID:  xxxx
-token:  yyyy
-```
-
-#### 2. Extracting the refresh token from 1Password
-
-This is technically the better method because the refresh-token does not expire.
-Use a reverse proxy like Proxyman, mitmproxy or charles, then start your browser and create a masked email
-
-Find the refresh token inside the body when the 1Password extension first connects to the fastmail API and write that down
-
-Specify the token as usual with the `-token` flag, but also set `-refresh` to tell the CLI that the token is a refresh token.
-
-#### Why is auth so complicated??
-
-The Masked Email capability is not available through the normal JMAP API yet, so if we were to create a token with the JMAP API scope, it wouldn't be able to use Masked Emails.
-
-I contacted the fastmail team and while there are plans to move this into general availablity, it's not gonna be anytime soon (though likely this year).
+You can test authentication by running `maskedemail-cli session`.
 
 ## Usage
 
@@ -57,23 +36,27 @@ Flags:
         fastmail account id
   -appname string
         the appname to identify the creator (default "maskedemail-cli")
-  -refresh
-        whether the token is a refresh token
   -token string
         the token to authenticate with
 
 Commands:
   maskedemail-cli create <domain>
-  maskedemail-cli auth <email> <password>
+  maskedemail-cli session
 
 ```
 
 Example:
 
 ```
-$ maskedemail-cli -accountid xxxx -token abcdef12345 create facebook.com
+$ maskedemail-cli -token abcdef12345 create facebook.com
 ```
 
 ## License
 
 MIT
+
+## Attributions
+
+JMAP API documentation from [jmapio/jmap][] (Apache 2.0 / Copyright 2016 Fastmail Pty Ltd)
+
+[jmapio/jmap]: https://github.com/jmapio/jmap
