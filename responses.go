@@ -66,10 +66,50 @@ func (cr *MethodResponseMaskedEmailSet) GetCreatedItem() (MethodResponseCreateIt
 	return MethodResponseCreateItem{}, errors.New("no items returned")
 }
 
-type RefreshTokenResponse struct {
-	Scope        string `json:"scope,omitempty"`
-	RefreshToken string `json:"refresh_token,omitempty"`
-	TokenType    string `json:"token_type,omitempty"`
-	ExpiresIn    int    `json:"expires_in,omitempty"`
-	AccessToken  string `json:"access_token,omitempty"`
+// Account is a collection of data in the JMAP API.
+//
+// https://jmap.io/spec-core.html#terminology
+type Account struct {
+	// Name is a user-friendly string to show when presenting content from this
+	// account, e.g., the email address representing the owner of the account.
+	Name string `json:"name"`
+	// Capabilities is the set of capability URIs for the methods supported in
+	// this account.
+	Capabilities map[string]json.RawMessage `json:"accountCapabilities"`
+}
+
+// SessionResource gives details about the data and capabilities the server can
+// provide to the client given those credentials.
+//
+// It is the initial response from a JMAP auto-discovery endpoint.
+//
+// https://jmap.io/spec-core.html#the-jmap-session-resource
+type SessionResource struct {
+	// Capabilities is an object specifying the capabilities of this server.
+	// Each key is a URI for a capability supported by the server.
+	Capabilities map[string]json.RawMessage `json:"capabilities"`
+	// Accounts is a map of an account id to an Account object for each account
+	// the user has access to.
+	Accounts map[string]Account `json:"accounts"`
+	// PrimaryAccounts is map of capability URIs (as found in
+	// `accountCapabilities`) to the account id that is considered to be the
+	// user's main or default account for data pertaining to that capability.
+	PrimaryAccounts map[string]string `json:"primaryAccounts"`
+	// ApiUrl is the URL to use for JMAP API requests.
+	ApiUrl string `json:"apiUrl"`
+}
+
+var _ Session = &SessionResource{}
+
+func (s *SessionResource) ApiEndpoint() string {
+	return s.ApiUrl
+}
+
+func (s *SessionResource) DefaultAccountForCapability(capabilityURI string) string {
+	return s.PrimaryAccounts[capabilityURI]
+}
+
+func (s *SessionResource) AccountHasCapability(accID string, capabilityURI string) bool {
+	_, ok := s.Accounts[accID].Capabilities[capabilityURI]
+	return ok
 }

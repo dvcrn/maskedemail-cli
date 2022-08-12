@@ -46,6 +46,7 @@ func (r *MethodCall) MarshalJSON() ([]byte, error) {
   ]
 }
 */
+
 type CreatePayload struct {
 	ForDomain string `json:"forDomain"`
 	State     string `json:"state,omitempty"`

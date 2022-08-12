@@ -1,19 +1,17 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strings"
 )
 
 var flagAppname = flag.String("appname", "maskedemail-cli", "the appname to identify the creator")
 var flagToken = flag.String("token", "", "the token to authenticate with")
 var flagAccountID = flag.String("accountid", "", "fastmail account id")
-var flagUseRefresh = flag.Bool("refresh", false, "whether the token is a refresh token")
 var action actionType = actionTypeUnknown
 
 type actionType string
@@ -21,7 +19,7 @@ type actionType string
 const (
 	actionTypeUnknown = ""
 	actionTypeCreate  = "create"
-	actionTypeAuth    = "auth"
+	actionTypeSession = "session"
 )
 
 func init() {
@@ -33,13 +31,13 @@ func init() {
 		fmt.Println("")
 		fmt.Println("Commands:")
 		fmt.Println("  maskedemail-cli create <domain>")
-		fmt.Println("  maskedemail-cli auth <email> <password>")
+		fmt.Println("  maskedemail-cli session")
 	}
 
 	if len(flag.Args()) < 1 {
-		log.Println("no argument given. currently supported: create, auth")
+		log.Println("no argument given. currently supported: create, session")
 		flag.Usage()
-		os.Exit(0)
+		os.Exit(1)
 	}
 
 	switch strings.ToLower(flag.Arg(0)) {
@@ -50,76 +48,74 @@ func init() {
 		if *flagToken == "" {
 			log.Println("-token flag is not set")
 			flag.Usage()
-			os.Exit(0)
+			os.Exit(1)
 		}
 
-		if *flagAccountID == "" {
-			log.Println("-accountid flag is not set")
-			flag.Usage()
-			os.Exit(0)
-		}
-
-	case "auth":
-		action = actionTypeAuth
+	case "session":
+		action = actionTypeSession
 	}
 }
 
 func main() {
-	client := NewClient(*flagAccountID, *flagToken, *flagAppname, "35c941ae")
+	client := NewClient(*flagToken, *flagAppname, "35c941ae")
 
 	switch action {
-	case actionTypeAuth:
-		if len(flag.Args()) != 3 {
-			log.Println("Usage: auth <email> <password>")
-			return
-		}
-
-		res, err := Authenticate(flag.Args()[1], flag.Args()[2])
+	case actionTypeSession:
+		session, err := client.Session()
 		if err != nil {
-			fmt.Println("authentication failed:", err)
-			return
+			log.Fatalf("fetching session: %v", err)
+		}
+		var accIDs []string
+		for accID := range session.Accounts {
+			if *flagAccountID != "" && *flagAccountID != accID {
+				continue
+			}
+			accIDs = append(accIDs, accID)
 		}
 
-		// find acc with jmap:mail capability
-		if accountID, ok := res.PrimaryAccounts["urn:ietf:params:jmap:mail"]; ok {
-			fmt.Println("authentication successful!")
-			fmt.Println("accountID: ", accountID)
-			fmt.Println("token: ", res.AccessToken)
-		} else {
-			fmt.Println("could not find correct accountID. Try one of these")
-			func(v interface{}) {
-				j, err := json.MarshalIndent(v, "", "  ")
-				if err != nil {
-					fmt.Printf("%v\n", err)
-					return
+		primaryAccountID := session.PrimaryAccounts[maskedEmailCapabilityURI]
+		sort.Slice(
+			accIDs,
+			func(i, j int) bool {
+				if primaryAccountID == accIDs[i] {
+					return true
 				}
-				buf := bytes.NewBuffer(j)
-				fmt.Printf("%v\n", buf.String())
-			}(res.PrimaryAccounts)
+				return accIDs[i] < accIDs[j]
+			},
+		)
+		for _, accID := range accIDs {
+			isPrimary := primaryAccountID == accID
+			isEnabled := session.AccountHasCapability(accID, maskedEmailCapabilityURI)
+
+			fmt.Printf(
+				"%s [%s] (primary: %t, enabled: %t)\n",
+				session.Accounts[accID].Name,
+				accID,
+				isPrimary,
+				isEnabled,
+			)
 		}
 
 	case actionTypeCreate:
 		if flag.Arg(1) == "" {
-			log.Println("Usage: create <domain>")
-			return
+			log.Fatalln("Usage: create <domain>")
 		}
 
-		if *flagUseRefresh {
-			_, err := client.RefreshToken()
-			if err != nil {
-				panic(err)
-			}
+		session, err := client.Session()
+		if err != nil {
+			log.Fatalf("initializing session: %v", err)
 		}
 
-		createRes, err := client.CreateMaskedEmail(flag.Arg(1), true)
+		createRes, err := client.CreateMaskedEmail(session, *flagAccountID, flag.Arg(1), true)
 		if err != nil {
 			log.Fatalf("err while creating maskedemail: %v", err)
 		}
 
-		fmt.Print(createRes.Email)
+		fmt.Println(createRes.Email)
 
 	default:
 		fmt.Println("action not found")
 		flag.Usage()
+		os.Exit(1)
 	}
 }
