@@ -17,13 +17,13 @@ go install github.com/dvcrn/maskedemail-cli@latest
 ```
 
 ### Authentication
-You'll need to [create a FastMail API token](https://www.fastmail.com/settings/security/tokens?u=1eb14002).
+You'll need to [create a FastMail API token](https://beta.fastmail.com/settings/security/tokens).
 
 > **🔒 The only necessary scope is "Masked Email".**
 >
 > Always use unique API tokens with the minimum scope(s) necessary for different purposes.
 
-You can test authentication by running `maskedemail-cli session`.
+You can test authentication by running `maskedemail-cli -token abcdef12345 session`.
 
 ## Usage
 
