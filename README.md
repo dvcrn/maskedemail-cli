@@ -27,8 +27,6 @@ You can test authentication by running `maskedemail-cli -token abcdef12345 sessi
 
 ## Usage
 
-Currently only the `create` command is implemented
-
 ```
 Usage of maskedemail-cli
 Flags:
