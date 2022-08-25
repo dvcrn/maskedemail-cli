@@ -52,6 +52,9 @@ Example:
 $ maskedemail-cli -token abcdef12345 create facebook.com
 $ maskedemail-cli -token abcdef12345 enable 123@mydomain.com
 $ maskedemail-cli -token abcdef12345 disable 123@mydomain.com
+
+$ maskedemail-cli -token abcdef12345 list | grep facebook
+123@mydomain.com     https://www.facebook.com       disabled   2022-08-09T07:49:43Z
 ```
 
 ## License
