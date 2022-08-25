@@ -10,9 +10,9 @@ import (
 	"text/tabwriter"
 )
 
-var flagAppname = flag.String("appname", os.Getenv("MASKEDEMAIL_APPNAME"), "the appname to identify the creator")
-var flagToken = flag.String("token", os.Getenv("MASKEDEMAIL_TOKEN"), "the token to authenticate with")
-var flagAccountID = flag.String("accountid", os.Getenv("MASKEDEMAIL_ACCOUNTID"), "fastmail account id")
+var flagAppname = flag.String("appname", os.Getenv("MASKEDEMAIL_APPNAME"), "the appname to identify the creator (or MASKEDEMAIL_APPNAME env) (default: maskedemail-cli)")
+var flagToken = flag.String("token", os.Getenv("MASKEDEMAIL_TOKEN"), "the token to authenticate with (or MASKEDEMAIL_TOKEN env)")
+var flagAccountID = flag.String("accountid", os.Getenv("MASKEDEMAIL_ACCOUNTID"), "fastmail account id (or MASKEDEMAIL_ACCOUNTID env)")
 var action actionType = actionTypeUnknown
 
 type actionType string
@@ -24,7 +24,7 @@ const (
 	actionTypeDisable = "disable"
 	actionTypeEnable  = "enable"
 	actionTypeList    = "list"
-	defaultAppname = "maskedemail-cli"
+	defaultAppname    = "maskedemail-cli"
 )
 
 func init() {
