@@ -28,14 +28,14 @@ You can test authentication by running `maskedemail-cli -token abcdef12345 sessi
 ## Usage
 
 ```
-Usage of maskedemail-cli
+Usage of maskedemail-cli:
 Flags:
   -accountid string
-        fastmail account id
+    	fastmail account id (or MASKEDEMAIL_ACCOUNTID env)
   -appname string
-        the appname to identify the creator (default "maskedemail-cli")
+    	the appname to identify the creator (or MASKEDEMAIL_APPNAME env) (default: maskedemail-cli)
   -token string
-        the token to authenticate with
+    	the token to authenticate with (or MASKEDEMAIL_TOKEN env)
 
 Commands:
   maskedemail-cli create <domain>
