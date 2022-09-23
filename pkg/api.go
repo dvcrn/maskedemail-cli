@@ -1,4 +1,4 @@
-package main
+package pkg
 
 import (
 	"bytes"
@@ -15,11 +15,11 @@ const (
 	// sessionEndpoint is used to auto-discover the main API endpoint
 	sessionEndpoint = "https://api.fastmail.com/jmap/session"
 
-	// maskedEmailCapabilityURI is the capability URI for the Masked Email
+	// MaskedEmailCapabilityURI is the capability URI for the Masked Email
 	// feature within the JMAP API.
 	//
 	// https://beta.fastmail.com/developer/maskedemail/
-	maskedEmailCapabilityURI = "https://www.fastmail.com/dev/maskedemail"
+	MaskedEmailCapabilityURI = "https://www.fastmail.com/dev/maskedemail"
 )
 
 // errNoAccountID is returned if an account ID is not explicitly provided and
@@ -126,7 +126,7 @@ func (client *Client) accIDOrDefault(session Session, accID string) (string, err
 		return accID, nil
 	}
 
-	accID = session.DefaultAccountForCapability(maskedEmailCapabilityURI)
+	accID = session.DefaultAccountForCapability(MaskedEmailCapabilityURI)
 	if accID == "" {
 		return "", errNoAccountID
 	}
@@ -165,7 +165,7 @@ func (client *Client) CreateMaskedEmail(
 	request := APIRequest{
 		Using: []string{
 			"urn:ietf:params:jmap:core",
-			maskedEmailCapabilityURI,
+			MaskedEmailCapabilityURI,
 		},
 		MethodCalls: []MethodCall{mc},
 	}
@@ -225,7 +225,7 @@ func (client *Client) UpdateMaskedEmailState(
 	apiRequest := APIRequest{
 		Using: []string{
 			"urn:ietf:params:jmap:core",
-			maskedEmailCapabilityURI,
+			MaskedEmailCapabilityURI,
 		},
 		MethodCalls: []MethodCall{r},
 	}
@@ -265,7 +265,7 @@ func (client *Client) GetAllMaskedEmails(
 	apiRequest := APIRequest{
 		Using: []string{
 			"urn:ietf:params:jmap:core",
-			maskedEmailCapabilityURI,
+			MaskedEmailCapabilityURI,
 		},
 		MethodCalls: []MethodCall{r},
 	}

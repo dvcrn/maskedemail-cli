@@ -8,6 +8,8 @@ import (
 	"sort"
 	"strings"
 	"text/tabwriter"
+
+	"github.com/dvcrn/maskedemail-cli/pkg"
 )
 
 var flagAppname = flag.String("appname", os.Getenv("MASKEDEMAIL_APPNAME"), "the appname to identify the creator (or MASKEDEMAIL_APPNAME env) (default: maskedemail-cli)")
@@ -78,7 +80,7 @@ func init() {
 }
 
 func main() {
-	client := NewClient(*flagToken, *flagAppname, "35c941ae")
+	client := pkg.NewClient(*flagToken, *flagAppname, "35c941ae")
 
 	switch action {
 	case actionTypeSession:
@@ -94,7 +96,7 @@ func main() {
 			accIDs = append(accIDs, accID)
 		}
 
-		primaryAccountID := session.PrimaryAccounts[maskedEmailCapabilityURI]
+		primaryAccountID := session.PrimaryAccounts[pkg.MaskedEmailCapabilityURI]
 		sort.Slice(
 			accIDs,
 			func(i, j int) bool {
@@ -106,7 +108,7 @@ func main() {
 		)
 		for _, accID := range accIDs {
 			isPrimary := primaryAccountID == accID
-			isEnabled := session.AccountHasCapability(accID, maskedEmailCapabilityURI)
+			isEnabled := session.AccountHasCapability(accID, pkg.MaskedEmailCapabilityURI)
 
 			fmt.Printf(
 				"%s [%s] (primary: %t, enabled: %t)\n",
@@ -150,7 +152,7 @@ func main() {
 		}
 
 		// find the alias to disable
-		var alias *MaskedEmail
+		var alias *pkg.MaskedEmail
 		for _, a := range allAliases {
 			if a.Email == flag.Arg(1) {
 				alias = a
@@ -162,7 +164,7 @@ func main() {
 			log.Fatalf("maskedemail %s not found", flag.Arg(1))
 		}
 
-		_, err = client.UpdateMaskedEmailState(session, *flagAccountID, alias.ID, MaskedEmailStateDisabled)
+		_, err = client.UpdateMaskedEmailState(session, *flagAccountID, alias.ID, pkg.MaskedEmailStateDisabled)
 		if err != nil {
 			log.Fatalf("err while updating maskedemail: %v", err)
 		}
@@ -185,7 +187,7 @@ func main() {
 		}
 
 		// find the alias to disable
-		var alias *MaskedEmail
+		var alias *pkg.MaskedEmail
 		for _, a := range allAliases {
 			if a.Email == flag.Arg(1) {
 				alias = a
@@ -197,7 +199,7 @@ func main() {
 			log.Fatalf("maskedemail %s not found", flag.Arg(1))
 		}
 
-		_, err = client.UpdateMaskedEmailState(session, *flagAccountID, alias.ID, MaskedEmailStateEnabled)
+		_, err = client.UpdateMaskedEmailState(session, *flagAccountID, alias.ID, pkg.MaskedEmailStateEnabled)
 		if err != nil {
 			log.Fatalf("err while creating maskedemail: %v", err)
 		}
