@@ -39,15 +39,15 @@ func (gr *APIResponse) UnmarshalJSON(b []byte) error {
 }
 
 type MaskedEmail struct {
-	CreatedAt     string `mapstructure:"createdAt"`
-	CreatedBy     string `mapstructure:"createdBy"`
-	Description   string `mapstructure:"description"`
-	Email         string `mapstructure:"email"`
-	ID            string `mapstructure:"id"`
-	LastMessageAt string `mapstructure:"lastMessageAt"`
-	State         string `mapstructure:"state"`
-	URL           string `mapstructure:"url"`
-	ForDomain     string `mapstructure:"forDomain"`
+	CreatedAt     string `mapstructure:"createdAt" json:"created_at,omitempty"`
+	CreatedBy     string `mapstructure:"createdBy" json:"created_by,omitempty"`
+	Description   string `mapstructure:"description" json:"description,omitempty"`
+	Email         string `mapstructure:"email" json:"email,omitempty"`
+	ID            string `mapstructure:"id" json:"id,omitempty"`
+	LastMessageAt string `mapstructure:"lastMessageAt" json:"last_message_at,omitempty"`
+	State         string `mapstructure:"state" json:"state,omitempty"`
+	URL           string `mapstructure:"url" json:"url,omitempty"`
+	ForDomain     string `mapstructure:"forDomain" json:"for_domain,omitempty"`
 }
 
 type MethodResponseMaskedEmailSet struct {
