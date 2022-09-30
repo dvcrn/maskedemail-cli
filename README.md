@@ -57,6 +57,11 @@ $ maskedemail-cli -token abcdef12345 list | grep facebook
 123@mydomain.com     https://www.facebook.com       disabled   2022-08-09T07:49:43Z
 ```
 
+## Other resources and things powered by this CLI 
+
+- [Siri Shortcut](https://www.icloud.com/shortcuts/973a2453b95d4dab97db950260283f4d) to disable the masked email of the currently selected message in Apple Mail
+- [maskedemail-js](https://github.com/dvcrn/maskedemail-js): Node package ready to import, backed by this CLI compiled to wasm
+
 ## License
 
 MIT
