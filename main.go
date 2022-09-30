@@ -15,6 +15,7 @@ import (
 var flagAppname = flag.String("appname", os.Getenv("MASKEDEMAIL_APPNAME"), "the appname to identify the creator (or MASKEDEMAIL_APPNAME env) (default: maskedemail-cli)")
 var flagToken = flag.String("token", "example-token", "the token to authenticate with (or MASKEDEMAIL_TOKEN env)")
 var flagAccountID = flag.String("accountid", os.Getenv("MASKEDEMAIL_ACCOUNTID"), "fastmail account id (or MASKEDEMAIL_ACCOUNTID env)")
+var flagShowDeleted = flag.Bool("show-deleted", false, "when enabled even deleted emails are shown, (default: false)")
 var action actionType = actionTypeUnknown
 
 type actionType string
@@ -222,7 +223,9 @@ func main() {
 		w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 		fmt.Fprintln(w, "Masked Email\tFor Domain\tState\tLast Email At\t")
 		for _, email := range maskedEmails {
-			if email.State != "deleted" {
+			if email.State == "deleted" && ! *flagShowDeleted {
+				continue
+			} else {
 				fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", email.Email, email.ForDomain, email.State, email.LastMessageAt)
 			}
 		}
