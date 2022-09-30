@@ -13,7 +13,7 @@ import (
 )
 
 var flagAppname = flag.String("appname", os.Getenv("MASKEDEMAIL_APPNAME"), "the appname to identify the creator (or MASKEDEMAIL_APPNAME env) (default: maskedemail-cli)")
-var flagToken = flag.String("token", os.Getenv("MASKEDEMAIL_TOKEN"), "the token to authenticate with (or MASKEDEMAIL_TOKEN env)")
+var flagToken = flag.String("token", "example-token", "the token to authenticate with (or MASKEDEMAIL_TOKEN env)")
 var flagAccountID = flag.String("accountid", os.Getenv("MASKEDEMAIL_ACCOUNTID"), "fastmail account id (or MASKEDEMAIL_ACCOUNTID env)")
 var action actionType = actionTypeUnknown
 
@@ -49,6 +49,8 @@ func init() {
 		flag.Usage()
 		os.Exit(1)
 	}
+
+	*flagToken = os.Getenv("MASKEDEMAIL_TOKEN")
 
 	if *flagToken == "" {
 		log.Println("-token flag is not set")
@@ -220,7 +222,9 @@ func main() {
 		w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 		fmt.Fprintln(w, "Masked Email\tFor Domain\tState\tLast Email At\t")
 		for _, email := range maskedEmails {
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", email.Email, email.ForDomain, email.State, email.LastMessageAt)
+			if email.State != "deleted" {
+				fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", email.Email, email.ForDomain, email.State, email.LastMessageAt)
+			}
 		}
 		w.Flush()
 
