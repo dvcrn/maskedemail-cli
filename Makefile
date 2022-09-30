@@ -1,14 +1,14 @@
 
 GO_SRC := $(wildcard ./*.go ./pkg/*.go)
 INSTALL_DIR := ${HOME}/.local/bin
-TARGET_BIN := bin/maskedemail-cli
+TARGET_BIN := maskedemail-cli
 
 all: build
 
-install: build
-	mv ${TARGET_BIN} ${INSTALL_DIR}/.
+install: bin/${TARGET_BIN}
+	cp -f $< ${INSTALL_DIR}/${TARGET_BIN}
 
-build: ${TARGET_BIN}
+build: bin/${TARGET_BIN}
 
 bin/%: ${GO_SRC}
 	mkdir bin/ &> /dev/null || true
