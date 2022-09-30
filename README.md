@@ -28,22 +28,23 @@ You can test authentication by running `maskedemail-cli -token abcdef12345 sessi
 ## Usage
 
 ```
-Usage of maskedemail-cli:
+Usage of ./maskedemail-cli:
 Flags:
   -accountid string
-    	fastmail account id (or MASKEDEMAIL_ACCOUNTID env)
+      fastmail account id (or MASKEDEMAIL_ACCOUNTID env)
   -appname string
-    	the appname to identify the creator (or MASKEDEMAIL_APPNAME env) (default: maskedemail-cli)
+      the appname to identify the creator (or MASKEDEMAIL_APPNAME env) (default: maskedemail-cli)
+  -show-deleted
+      when enabled even deleted emails are shown, (default: false)
   -token string
-    	the token to authenticate with (or MASKEDEMAIL_TOKEN env)
+      the token to authenticate with (or MASKEDEMAIL_TOKEN env) (default "example-token")
 
 Commands:
   maskedemail-cli create <domain>
-  maskedemail-cli enable <masked email>
-  maskedemail-cli disable <masked email>
+  maskedemail-cli enable <maskedemail>
+  maskedemail-cli disable <maskedemail>
   maskedemail-cli session
   maskedemail-cli list
-
 ```
 
 Example:
