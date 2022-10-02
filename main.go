@@ -225,9 +225,9 @@ func main() {
 		for _, email := range maskedEmails {
 			if email.State == "deleted" && ! *flagShowDeleted {
 				continue
-			} else {
-				fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", email.Email, email.ForDomain, email.State, email.LastMessageAt)
 			}
+
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", email.Email, email.ForDomain, email.State, email.LastMessageAt)
 		}
 		w.Flush()
 
