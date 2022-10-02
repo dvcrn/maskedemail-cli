@@ -28,7 +28,7 @@ You can test authentication by running `maskedemail-cli -token abcdef12345 sessi
 ## Usage
 
 ```
-Usage of ./maskedemail-cli:
+Usage of maskedemail-cli:
 Flags:
   -accountid string
       fastmail account id (or MASKEDEMAIL_ACCOUNTID env)
