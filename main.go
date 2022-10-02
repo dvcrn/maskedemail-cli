@@ -146,27 +146,9 @@ func main() {
 			log.Fatalf("initializing session: %v", err)
 		}
 
-		allAliases, err := client.GetAllMaskedEmails(session, *flagAccountID)
+		_, err = client.DisableMaskedEmail(session, *flagAccountID, flag.Arg(1))
 		if err != nil {
-			log.Fatalf("err while getting maskedemails: %v", err)
-		}
-
-		// find the alias to disable
-		var alias *pkg.MaskedEmail
-		for _, a := range allAliases {
-			if a.Email == flag.Arg(1) {
-				alias = a
-				break
-			}
-		}
-
-		if alias == nil {
-			log.Fatalf("maskedemail %s not found", flag.Arg(1))
-		}
-
-		_, err = client.UpdateMaskedEmailState(session, *flagAccountID, alias.ID, pkg.MaskedEmailStateDisabled)
-		if err != nil {
-			log.Fatalf("err while updating maskedemail: %v", err)
+			log.Fatalf("err disabling maskedemail: %v", err)
 		}
 
 		fmt.Printf("disabled email: %s\n", flag.Arg(1))
@@ -181,27 +163,9 @@ func main() {
 			log.Fatalf("initializing session: %v", err)
 		}
 
-		allAliases, err := client.GetAllMaskedEmails(session, *flagAccountID)
+		_, err = client.EnableMaskedEmail(session, *flagAccountID, flag.Arg(1))
 		if err != nil {
 			log.Fatalf("err while updating maskedemail: %v", err)
-		}
-
-		// find the alias to disable
-		var alias *pkg.MaskedEmail
-		for _, a := range allAliases {
-			if a.Email == flag.Arg(1) {
-				alias = a
-				break
-			}
-		}
-
-		if alias == nil {
-			log.Fatalf("maskedemail %s not found", flag.Arg(1))
-		}
-
-		_, err = client.UpdateMaskedEmailState(session, *flagAccountID, alias.ID, pkg.MaskedEmailStateEnabled)
-		if err != nil {
-			log.Fatalf("err while creating maskedemail: %v", err)
 		}
 
 		fmt.Printf("enabled maskedemail: %s\n", flag.Arg(1))

@@ -189,7 +189,7 @@ func (client *Client) CreateMaskedEmail(
 	return &created, nil
 }
 
-func (client *Client) EnableMaskedEmail(
+func (client *Client) EnableMaskedEmailByID(
 	session Session,
 	accID string,
 	emailID string,
@@ -197,12 +197,64 @@ func (client *Client) EnableMaskedEmail(
 	return client.UpdateMaskedEmailState(session, accID, emailID, MaskedEmailStateEnabled)
 }
 
-func (client *Client) DisableMaskedEmail(
+func (client *Client) EnableMaskedEmail(
+	session Session,
+	accID string,
+	email string,
+) (*MethodResponseMaskedEmailSet, error) {
+	allAliases, err := client.GetAllMaskedEmails(session, accID)
+	if err != nil {
+		return nil, err
+	}
+
+	// find the alias to disable
+	var alias *MaskedEmail
+	for _, a := range allAliases {
+		if a.Email == email {
+			alias = a
+			break
+		}
+	}
+
+	if alias == nil {
+		return nil, errors.New(fmt.Sprintf("maskedemail %s not found", email))
+	}
+
+	return client.EnableMaskedEmailByID(session, accID, alias.ID)
+}
+
+func (client *Client) DisableMaskedEmailByID(
 	session Session,
 	accID string,
 	emailID string,
 ) (*MethodResponseMaskedEmailSet, error) {
 	return client.UpdateMaskedEmailState(session, accID, emailID, MaskedEmailStateDisabled)
+}
+
+func (client *Client) DisableMaskedEmail(
+	session Session,
+	accID string,
+	email string,
+) (*MethodResponseMaskedEmailSet, error) {
+	allAliases, err := client.GetAllMaskedEmails(session, accID)
+	if err != nil {
+		return nil, err
+	}
+
+	// find the alias to disable
+	var alias *MaskedEmail
+	for _, a := range allAliases {
+		if a.Email == email {
+			alias = a
+			break
+		}
+	}
+
+	if alias == nil {
+		return nil, errors.New(fmt.Sprintf("maskedemail %s not found", email))
+	}
+
+	return client.DisableMaskedEmailByID(session, accID, alias.ID)
 }
 
 func (client *Client) UpdateMaskedEmailState(
