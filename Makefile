@@ -5,7 +5,9 @@ TARGET_BIN := maskedemail-cli
 
 all: build
 
-install: bin/${TARGET_BIN}
+install: ${INSTALL_DIR}/${TARGET_BIN}
+
+${INSTALL_DIR}/${TARGET_BIN}: bin/${TARGET_BIN}
 	mkdir -p ${INSTALL_DIR}
 	cp -f $< ${INSTALL_DIR}/${TARGET_BIN}
 
