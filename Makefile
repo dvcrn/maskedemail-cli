@@ -9,7 +9,7 @@ install: ${INSTALL_DIR}/${TARGET_BIN}
 
 ${INSTALL_DIR}/${TARGET_BIN}: bin/${TARGET_BIN}
 	mkdir -p ${INSTALL_DIR}
-	cp -f $< ${INSTALL_DIR}/${TARGET_BIN}
+	cp -f $< $@
 
 build: bin/${TARGET_BIN}
 
