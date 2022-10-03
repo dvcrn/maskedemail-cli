@@ -12,11 +12,16 @@ import (
 	"github.com/dvcrn/maskedemail-cli/pkg"
 )
 
-var flagAppname = flag.String("appname", os.Getenv("MASKEDEMAIL_APPNAME"), "the appname to identify the creator (or MASKEDEMAIL_APPNAME env) (default: maskedemail-cli)")
-var flagToken = flag.String("token", "example-token", "the token to authenticate with (or MASKEDEMAIL_TOKEN env)")
-var flagAccountID = flag.String("accountid", os.Getenv("MASKEDEMAIL_ACCOUNTID"), "fastmail account id (or MASKEDEMAIL_ACCOUNTID env)")
+const envTokenVarName string = "MASKEDEMAIL_TOKEN"
+const envAppVarName string = "MASKEDEMAIL_APPNAME"
+const envAccountIdVarName string = "MASKEDEMAIL_ACCOUNTID"
+
+var flagAppname = flag.String("appname", os.Getenv(envAppVarName), "the appname to identify the creator (or "+envAppVarName+" env) (default: maskedemail-cli)")
+var flagToken = flag.String("token", "", "the token to authenticate with (or "+envTokenVarName+" env)")
+var flagAccountID = flag.String("accountid", os.Getenv(envAccountIdVarName), "fastmail account id (or "+envAccountIdVarName+" env)")
 var flagShowDeleted = flag.Bool("show-deleted", false, "when enabled even deleted emails are shown, (default: false)")
 var action actionType = actionTypeUnknown
+var envToken string
 
 type actionType string
 
@@ -51,12 +56,15 @@ func init() {
 		os.Exit(1)
 	}
 
-	*flagToken = os.Getenv("MASKEDEMAIL_TOKEN")
-
+	// CLI parameter have precedence over ENV variables
 	if *flagToken == "" {
-		log.Println("-token flag is not set")
-		flag.Usage()
-		os.Exit(1)
+		envToken = os.Getenv(envTokenVarName)
+		if envToken != "" {
+			*flagToken = envToken
+		} else {
+			flag.Usage()
+			os.Exit(1)
+		}
 	}
 
 	if *flagAppname == "" {
@@ -223,7 +231,7 @@ func main() {
 		w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 		fmt.Fprintln(w, "Masked Email\tFor Domain\tState\tLast Email At\t")
 		for _, email := range maskedEmails {
-			if email.State == "deleted" && ! *flagShowDeleted {
+			if email.State == "deleted" && !*flagShowDeleted {
 				continue
 			}
 
