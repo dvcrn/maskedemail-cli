@@ -60,8 +60,9 @@ $ maskedemail-cli -token abcdef12345 list | grep facebook
 
 ## Other resources and things powered by this CLI 
 
-- [Siri Shortcut](https://www.icloud.com/shortcuts/973a2453b95d4dab97db950260283f4d) to disable the masked email of the currently selected message in Apple Mail
+- [Siri Shortcut](https://www.icloud.com/shortcuts/973a2453b95d4dab97db950260283f4d) to disable the masked email of the currently selected message in Apple Mail on macOS
 - [maskedemail-js](https://github.com/dvcrn/maskedemail-js): Node package ready to import, backed by this CLI compiled to wasm
+- [Masked Email Manager iOS App](https://apps.apple.com/us/app/masked-email-manager/id6443853807): iOS App backed by this CLI compiled to GopherJS
 
 ## License
 
