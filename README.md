@@ -40,7 +40,7 @@ Flags:
       the token to authenticate with (or MASKEDEMAIL_TOKEN env) (default "example-token")
 
 Commands:
-  maskedemail-cli create <domain>
+  maskedemail-cli create <domain> <description>
   maskedemail-cli enable <maskedemail>
   maskedemail-cli disable <maskedemail>
   maskedemail-cli session
@@ -50,12 +50,12 @@ Commands:
 Example:
 
 ```
-$ maskedemail-cli -token abcdef12345 create facebook.com
+$ maskedemail-cli -token abcdef12345 create facebook.com "Facebook"
 $ maskedemail-cli -token abcdef12345 enable 123@mydomain.com
 $ maskedemail-cli -token abcdef12345 disable 123@mydomain.com
 
 $ maskedemail-cli -token abcdef12345 list | grep facebook
-123@mydomain.com     https://www.facebook.com       disabled   2022-08-09T07:49:43Z
+123@mydomain.com    https://www.facebook.com    Facebook    disabled    2022-08-09T07:49:43Z    2022-07-02T06:34:21Z
 ```
 
 ## Other resources and things powered by this CLI 

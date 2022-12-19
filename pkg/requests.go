@@ -48,8 +48,9 @@ func (r *MethodCall) MarshalJSON() ([]byte, error) {
 */
 
 type CreatePayload struct {
-	ForDomain string `json:"forDomain"`
-	State     string `json:"state,omitempty"`
+	ForDomain   string `json:"forDomain"`
+	State       string `json:"state,omitempty"`
+	Description string `json:"description"`
 }
 
 type MethodCallCreate struct {
@@ -65,13 +66,14 @@ type UpdateState struct {
 // accID is the users account ID.
 // appName is the name to identify the app that created the maskedemail.
 // domain is the label to identify where the email is intended for.
-func NewMethodCallCreate(accID, appName, domain string, state string) MethodCallCreate {
+func NewMethodCallCreate(accID, appName, domain string, state string, description string) MethodCallCreate {
 	mesp := MethodCallCreate{}
 	mesp.AccountID = accID
 	mesp.Create = map[string]CreatePayload{
 		appName: {
-			ForDomain: domain,
-			State:     state,
+			ForDomain:   domain,
+			State:       state,
+			Description: description,
 		},
 	}
 

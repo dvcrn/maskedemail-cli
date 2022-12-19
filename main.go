@@ -43,7 +43,7 @@ func init() {
 		flag.PrintDefaults()
 		fmt.Println("")
 		fmt.Println("Commands:")
-		fmt.Println("  maskedemail-cli create <domain>")
+		fmt.Println("  maskedemail-cli create <domain> <description>")
 		fmt.Println("  maskedemail-cli enable <maskedemail>")
 		fmt.Println("  maskedemail-cli disable <maskedemail>")
 		fmt.Println("  maskedemail-cli session")
@@ -131,8 +131,14 @@ func main() {
 		}
 
 	case actionTypeCreate:
-		if flag.Arg(1) == "" {
-			log.Fatalln("Usage: create <domain>")
+
+		if (len(flag.Args()) != 3) {
+			log.Fatalln("Usage: create <domain> <description>")
+		}
+
+		if (strings.TrimSpace(flag.Arg(1)) == "") && (strings.TrimSpace(flag.Arg(2)) == "") {
+			fmt.Println("Usage: create <domain> <description>")
+			log.Fatalln("At least one of <domain> and <description> are required")
 		}
 
 		session, err := client.Session()
@@ -140,7 +146,7 @@ func main() {
 			log.Fatalf("initializing session: %v", err)
 		}
 
-		createRes, err := client.CreateMaskedEmail(session, *flagAccountID, flag.Arg(1), true)
+		createRes, err := client.CreateMaskedEmail(session, *flagAccountID, flag.Arg(1), true, flag.Arg(2))
 		if err != nil {
 			log.Fatalf("err while creating maskedemail: %v", err)
 		}
@@ -193,13 +199,13 @@ func main() {
 		}
 
 		w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
-		fmt.Fprintln(w, "Masked Email\tFor Domain\tState\tLast Email At\t")
+		fmt.Fprintln(w, "Masked Email\tFor Domain\tDescription\tState\tLast Email At\tCreated At")
 		for _, email := range maskedEmails {
 			if email.State == "deleted" && !*flagShowDeleted {
 				continue
 			}
 
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", email.Email, email.ForDomain, email.State, email.LastMessageAt)
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", email.Email, email.ForDomain, email.Description, email.State, email.LastMessageAt, email.CreatedAt)
 		}
 		w.Flush()
 
