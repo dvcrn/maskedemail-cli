@@ -47,7 +47,7 @@ type MaskedEmail struct {
 	LastMessageAt string `mapstructure:"lastMessageAt" json:"lastMessageAt"`
 	State         string `mapstructure:"state" json:"state"`
 	URL           string `mapstructure:"url" json:"url"`
-	ForDomain     string `mapstructure:"forDomain" json:"forDomain"`
+	Domain        string `mapstructure:"forDomain" json:"forDomain"`
 }
 
 type MethodResponseMaskedEmailSet struct {

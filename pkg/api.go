@@ -44,8 +44,8 @@ type Session interface {
 type UpdateFields struct {
 	isStateSet	     bool
 	state            MaskedEmailState
-	isForDomainSet   bool
-	forDomain        string
+	isDomainSet      bool
+	domain           string
 	isDescriptionSet bool
 	description      string
 }
@@ -143,7 +143,7 @@ func (client *Client) accIDOrDefault(session Session, accID string) (string, err
 	return accID, nil
 }
 
-// CreateMaskedEmail creates a new masked email for the given forDomain domain.
+// CreateMaskedEmail creates a new masked email for the given domain.
 //
 // If `accID` is the empty string, the primary account for Masked Email will be
 // used.
@@ -152,7 +152,7 @@ func (client *Client) accIDOrDefault(session Session, accID string) (string, err
 func (client *Client) CreateMaskedEmail(
 	session Session,
 	accID string,
-	forDomain string,
+	domain string,
 	enabled bool,
 	description string,
 ) (*MaskedEmail, error) {
@@ -168,7 +168,7 @@ func (client *Client) CreateMaskedEmail(
 
 	mc := MethodCall{
 		MethodName: "MaskedEmail/set",
-		Payload:    NewMethodCallCreate(accID, client.appName, forDomain, state, description),
+		Payload:    NewMethodCallCreate(accID, client.appName, domain, state, description),
 		Payload2:   "0",
 	}
 
@@ -289,8 +289,8 @@ func (client *Client) UpdateMaskedEmail(
 	var payload MethodCallUpdate
 	 if fields.isStateSet {
 	 	payload = NewMethodCallUpdateState(accID, emailID, fields.state)
-	 } else if fields.isForDomainSet {
-	 	payload = NewMethodCallUpdateForDomain(accID, emailID, fields.forDomain)
+	 } else if fields.isDomainSet {
+	 	payload = NewMethodCallUpdateDomain(accID, emailID, fields.domain)
 	 } else if fields.isDescriptionSet {
 	 	payload = NewMethodCallUpdateDescription(accID, emailID, fields.description)
 	 }
@@ -326,21 +326,21 @@ func (client *Client) UpdateMaskedEmail(
 	return nil, nil
 }
 
-func (client *Client) UpdateForDomainByID(
+func (client *Client) UpdateDomainByID(
 	session Session,
 	accID string,
 	emailID string,
-	forDomain string,
+	domain string,
 ) (*MethodResponseMaskedEmailSet, error) {
-	fields := UpdateFields{ isForDomainSet: true, forDomain: forDomain };
+	fields := UpdateFields{ isDomainSet: true, domain: domain };
 	return client.UpdateMaskedEmail(session, accID, emailID, fields)
 }
 
-func (client *Client) UpdateForDomain(
+func (client *Client) UpdateDomain(
 	session Session,
 	accID string,
 	email string,
-	forDomain string,
+	domain string,
 ) (*MethodResponseMaskedEmailSet, error) {
 
 	emailID, err := client.LookupMaskedEmailID(session, accID, email)
@@ -349,7 +349,7 @@ func (client *Client) UpdateForDomain(
 		return nil, err
 	}
 
-	return client.UpdateForDomainByID(session, accID, emailID, forDomain)
+	return client.UpdateDomainByID(session, accID, emailID, domain)
 }
 
 func (client *Client) UpdateDescriptionByID(

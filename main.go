@@ -224,7 +224,7 @@ func main() {
 			}
 
 			// HACK: trim space here is for hack to deal with possible empty strings
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", email.Email, strings.TrimSpace(email.ForDomain), strings.TrimSpace(email.Description), email.State, email.LastMessageAt, email.CreatedAt)
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", email.Email, strings.TrimSpace(email.Domain), strings.TrimSpace(email.Description), email.State, email.LastMessageAt, email.CreatedAt)
 		}
 		w.Flush()
 
@@ -247,7 +247,7 @@ func main() {
 			log.Fatalf("initializing session: %v", err)
 		}
 
-		_, err = client.UpdateForDomain(session, *flagAccountID, maskedemail, domain)
+		_, err = client.UpdateDomain(session, *flagAccountID, maskedemail, domain)
 		if err != nil {
 			log.Fatalf("err updating maskedemail domain: %v", err)
 		}

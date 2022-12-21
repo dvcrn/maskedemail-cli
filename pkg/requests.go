@@ -48,7 +48,7 @@ func (r *MethodCall) MarshalJSON() ([]byte, error) {
 */
 
 type CreatePayload struct {
-	ForDomain   string `json:"forDomain"`
+	Domain      string `json:"forDomain"`
 	State       string `json:"state,omitempty"`
 	Description string `json:"description"`
 }
@@ -60,7 +60,7 @@ type MethodCallCreate struct {
 
 type UpdatePayload struct {
 	State string `json:"state,omitempty"`
-	ForDomain string `json:"forDomain,omitempty"`
+	Domain string `json:"forDomain,omitempty"`
 	Description string `json:"description,omitempty"`
 }
 
@@ -69,12 +69,12 @@ type UpdatePayload struct {
 // appName is the name to identify the app that created the maskedemail.
 // domain is the label to identify where the email is intended for.
 // description is a description of the masked email
-func NewMethodCallCreate(accID, appName, forDomain string, state string, description string) MethodCallCreate {
+func NewMethodCallCreate(accID, appName, domain string, state string, description string) MethodCallCreate {
 	mesp := MethodCallCreate{}
 	mesp.AccountID = accID
 	mesp.Create = map[string]CreatePayload{
 		appName: {
-			ForDomain:   forDomain,
+			Domain:      domain,
 			State:       state,
 			Description: description,
 		},
@@ -110,20 +110,20 @@ func NewMethodCallUpdateState(accID, alias string, state MaskedEmailState) Metho
 }
 
 // NewMethodCallUpdateDomain creates a new method call to update a maskedemail.
-func NewMethodCallUpdateForDomain(accID, alias string, forDomain string) MethodCallUpdate {
+func NewMethodCallUpdateDomain(accID, alias string, domain string) MethodCallUpdate {
 	mesp := MethodCallUpdate{}
 	mesp.AccountID = accID
 
 	// HACK: to make it appear the value is cleared out
 	//  if left as empty string, the conversion to json's
 	//  omitempty will not pass value in request and it won't get changed
-	if forDomain == "" {
-		forDomain = " "
+	if domain == "" {
+		domain = " "
 	}
 
 	mesp.Update = map[string]UpdatePayload{
 		alias: {
-			ForDomain: string(forDomain),
+			Domain: string(domain),
 		},
 	}
 
