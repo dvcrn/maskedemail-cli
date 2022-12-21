@@ -26,13 +26,15 @@ var envToken string
 type actionType string
 
 const (
-	actionTypeUnknown = ""
-	actionTypeCreate  = "create"
-	actionTypeSession = "session"
-	actionTypeDisable = "disable"
-	actionTypeEnable  = "enable"
-	actionTypeList    = "list"
-	defaultAppname    = "maskedemail-cli"
+	actionTypeUnknown            = ""
+	actionTypeCreate             = "create"
+	actionTypeSession            = "session"
+	actionTypeDisable            = "disable"
+	actionTypeEnable             = "enable"
+	actionTypeUpdateDomain       = "update domain"
+	actionTypeUpdateDescription  = "update description"
+	actionTypeList               = "list"
+	defaultAppname               = "maskedemail-cli"
 )
 
 func init() {
@@ -46,12 +48,14 @@ func init() {
 		fmt.Println("  maskedemail-cli create <domain> <description>")
 		fmt.Println("  maskedemail-cli enable <maskedemail>")
 		fmt.Println("  maskedemail-cli disable <maskedemail>")
+		fmt.Println("  maskedemail-cli update domain <maskedemail> <domain>")
+		fmt.Println("  maskedemail-cli update description <maskedemail> <description>")
 		fmt.Println("  maskedemail-cli session")
 		fmt.Println("  maskedemail-cli list")
 	}
 
 	if len(flag.Args()) < 1 {
-		log.Println("no argument given. currently supported: create, session, disable, enable")
+		log.Println("no argument given. currently supported: create, session, disable, enable, update domain, update description")
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -87,6 +91,16 @@ func init() {
 
 	case "list":
 		action = actionTypeList
+
+	case "update":
+
+		switch strings.ToLower(flag.Arg(1)) {
+		case "domain":
+			action = actionTypeUpdateDomain
+
+		case "description":
+			action = actionTypeUpdateDescription
+		}
 	}
 }
 
@@ -136,7 +150,11 @@ func main() {
 			log.Fatalln("Usage: create <domain> <description>")
 		}
 
-		if (strings.TrimSpace(flag.Arg(1)) == "") && (strings.TrimSpace(flag.Arg(2)) == "") {
+		domain := strings.TrimSpace(flag.Arg(1))
+		description := strings.TrimSpace(flag.Arg(2))
+
+
+		if (domain == "") && (description == "") {
 			fmt.Println("Usage: create <domain> <description>")
 			log.Fatalln("At least one of <domain> and <description> are required")
 		}
@@ -146,7 +164,7 @@ func main() {
 			log.Fatalf("initializing session: %v", err)
 		}
 
-		createRes, err := client.CreateMaskedEmail(session, *flagAccountID, flag.Arg(1), true, flag.Arg(2))
+		createRes, err := client.CreateMaskedEmail(session, *flagAccountID, domain, true, description)
 		if err != nil {
 			log.Fatalf("err while creating maskedemail: %v", err)
 		}
@@ -205,9 +223,63 @@ func main() {
 				continue
 			}
 
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", email.Email, email.ForDomain, email.Description, email.State, email.LastMessageAt, email.CreatedAt)
+			// HACK: trim space here is for hack to deal with possible empty strings
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", email.Email, strings.TrimSpace(email.ForDomain), strings.TrimSpace(email.Description), email.State, email.LastMessageAt, email.CreatedAt)
 		}
 		w.Flush()
+
+	case actionTypeUpdateDomain:
+
+		if (len(flag.Args()) != 4) {
+			log.Fatalln("Usage: update domain <maskedemail> <domain>")
+		}
+
+		maskedemail := strings.TrimSpace(flag.Arg(2))
+		domain := strings.TrimSpace(flag.Arg(3))
+
+		if (maskedemail == "") {
+			fmt.Println("Usage: update domain <maskedemail> <domain>")
+			log.Fatalln("<maskedemail> cannot be empty")
+		}
+
+		session, err := client.Session()
+		if err != nil {
+			log.Fatalf("initializing session: %v", err)
+		}
+
+		_, err = client.UpdateForDomain(session, *flagAccountID, maskedemail, domain)
+		if err != nil {
+			log.Fatalf("err updating maskedemail domain: %v", err)
+		}
+
+		fmt.Printf("updated domain to \"%s\" for maskedemail %s\n", domain, maskedemail)
+
+	case actionTypeUpdateDescription:
+
+		if (len(flag.Args()) != 4) {
+			log.Fatalln("Usage: update description <maskedemail> <description>")
+		}
+
+		maskedemail := strings.TrimSpace(flag.Arg(2))
+		description := strings.TrimSpace(flag.Arg(3))
+
+		if (maskedemail == "") {
+			fmt.Println("Usage: update description <maskedemail> <description>")
+			log.Fatalln("<maskedemail> cannot be empty")
+		}
+
+		session, err := client.Session()
+		if err != nil {
+			log.Fatalf("initializing session: %v", err)
+		}
+
+		_, err = client.UpdateDescription(session, *flagAccountID, maskedemail, description)
+		if err != nil {
+			log.Fatalf("err updating maskedemail description: %v", err)
+		}
+
+		fmt.Printf("updated description to \"%s\" for maskedemail %s\n", description, maskedemail)
+
 
 	default:
 		fmt.Println("action not found")
