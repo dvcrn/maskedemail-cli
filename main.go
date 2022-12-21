@@ -19,7 +19,10 @@ const envAccountIdVarName string = "MASKEDEMAIL_ACCOUNTID"
 var flagAppname = flag.String("appname", os.Getenv(envAppVarName), "the appname to identify the creator (or "+envAppVarName+" env) (default: maskedemail-cli)")
 var flagToken = flag.String("token", "", "the token to authenticate with (or "+envTokenVarName+" env)")
 var flagAccountID = flag.String("accountid", os.Getenv(envAccountIdVarName), "fastmail account id (or "+envAccountIdVarName+" env)")
-var flagShowDeleted = flag.Bool("show-deleted", false, "when enabled even deleted emails are shown, (default: false)")
+
+
+var listCmd = flag.NewFlagSet("list", flag.ExitOnError)
+var flagShowDeleted = listCmd.Bool("show-deleted", false, "when enabled even deleted emails are shown, (default: false)")
 
 var createCmd = flag.NewFlagSet("create", flag.ExitOnError)
 var flagCreateDomain = createCmd.String("domain", "", "domain for the masked email")
@@ -60,7 +63,7 @@ func init() {
 		fmt.Println("  maskedemail-cli update domain <maskedemail> <domain>")
 		fmt.Println("  maskedemail-cli update desc <maskedemail> <description>")
 		fmt.Println("  maskedemail-cli session")
-		fmt.Println("  maskedemail-cli list")
+		fmt.Println("  maskedemail-cli list [-show-deleted]")
 	}
 
 	if len(flag.Args()) < 1 {
@@ -157,7 +160,7 @@ func main() {
 		}
 
 	case actionTypeCreate:
-
+		// parse command-specific args
 		createCmd.Parse(os.Args[2:])
 
 		domain := strings.TrimSpace(*flagCreateDomain)
@@ -227,6 +230,9 @@ func main() {
 		fmt.Printf("deleted maskedemail: %s\n", flag.Arg(1))
 
 	case actionTypeList:
+		// parse command-specific args
+		listCmd.Parse(os.Args[2:])
+
 		session, err := client.Session()
 		if err != nil {
 			log.Fatalf("initializing session: %v", err)
