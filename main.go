@@ -252,7 +252,7 @@ func main() {
 			log.Fatalf("err updating maskedemail domain: %v", err)
 		}
 
-		fmt.Printf("updated domain to \"%s\" for maskedemail %s\n", domain, maskedemail)
+		fmt.Printf("updated domain to \"%s\" for %s\n", domain, maskedemail)
 
 	case actionTypeUpdateDescription:
 
@@ -278,7 +278,7 @@ func main() {
 			log.Fatalf("err updating maskedemail description: %v", err)
 		}
 
-		fmt.Printf("updated description to \"%s\" for maskedemail %s\n", description, maskedemail)
+		fmt.Printf("updated description to \"%s\" for %s\n", description, maskedemail)
 
 
 	default:
