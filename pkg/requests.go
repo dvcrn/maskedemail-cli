@@ -88,6 +88,7 @@ type MaskedEmailState string
 const (
 	MaskedEmailStateEnabled  MaskedEmailState = "enabled"
 	MaskedEmailStateDisabled                  = "disabled"
+	MaskedEmailStateDeleted                   = "deleted"
 )
 
 type MethodCallUpdate struct {

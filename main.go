@@ -38,6 +38,7 @@ const (
 	actionTypeSession            = "session"
 	actionTypeDisable            = "disable"
 	actionTypeEnable             = "enable"
+	actionTypeDelete             = "delete"
 	actionTypeUpdateDomain       = "update domain"
 	actionTypeUpdateDescription  = "update desc"
 	actionTypeList               = "list"
@@ -55,6 +56,7 @@ func init() {
 		fmt.Println("  maskedemail-cli create [-domain \"<domain>\"] [-desc \"<description>\"] [-enabled=true|false (default: true)]")
 		fmt.Println("  maskedemail-cli enable <maskedemail>")
 		fmt.Println("  maskedemail-cli disable <maskedemail>")
+		fmt.Println("  maskedemail-cli delete <maskedemail>")
 		fmt.Println("  maskedemail-cli update domain <maskedemail> <domain>")
 		fmt.Println("  maskedemail-cli update desc <maskedemail> <description>")
 		fmt.Println("  maskedemail-cli session")
@@ -62,7 +64,7 @@ func init() {
 	}
 
 	if len(flag.Args()) < 1 {
-		log.Println("no argument given. currently supported: create, session, disable, enable, update domain, update desc")
+		log.Println("no argument given. currently supported: create, session, disable, enable, delete, update domain, update desc")
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -95,6 +97,9 @@ func init() {
 
 	case "enable":
 		action = actionTypeEnable
+
+	case "delete":
+		action = actionTypeDelete
 
 	case "list":
 		action = actionTypeList
@@ -203,6 +208,23 @@ func main() {
 		}
 
 		fmt.Printf("enabled maskedemail: %s\n", flag.Arg(1))
+
+	case actionTypeDelete:
+		if flag.Arg(1) == "" {
+			log.Fatalln("Usage: delete <email>")
+		}
+
+		session, err := client.Session()
+		if err != nil {
+			log.Fatalf("initializing session: %v", err)
+		}
+
+		_, err = client.DeleteMaskedEmail(session, *flagAccountID, flag.Arg(1))
+		if err != nil {
+			log.Fatalf("err while deleting maskedemail: %v", err)
+		}
+
+		fmt.Printf("deleted maskedemail: %s\n", flag.Arg(1))
 
 	case actionTypeList:
 		session, err := client.Session()

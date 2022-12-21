@@ -273,6 +273,30 @@ func (client *Client) DisableMaskedEmail(
 	return client.DisableMaskedEmailByID(session, accID, emailID)
 }
 
+func (client *Client) DeleteMaskedEmailByID(
+	session Session,
+	accID string,
+	emailID string,
+) (*MethodResponseMaskedEmailSet, error) {
+	fields := UpdateFields{ isStateSet: true, state: MaskedEmailStateDeleted };
+	return client.UpdateMaskedEmail(session, accID, emailID, fields)
+}
+
+func (client *Client) DeleteMaskedEmail(
+	session Session,
+	accID string,
+	email string,
+) (*MethodResponseMaskedEmailSet, error) {
+
+	emailID, err := client.LookupMaskedEmailID(session, accID, email)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return client.DeleteMaskedEmailByID(session, accID, emailID)
+}
+
 func (client *Client) UpdateMaskedEmail(
 	session Session,
 	accID string,
