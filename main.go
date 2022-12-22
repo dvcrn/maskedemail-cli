@@ -16,28 +16,33 @@ const envTokenVarName string = "MASKEDEMAIL_TOKEN"
 const envAppVarName string = "MASKEDEMAIL_APPNAME"
 const envAccountIdVarName string = "MASKEDEMAIL_ACCOUNTID"
 
+// common set of flag names that are used in mulitple places
 const flagNameEmail string = "email"
 const flagNameDomain string = "domain"
 const flagNameDesc string = "desc"
 const flagNameEnabled string = "enabled"
+const flagNameShowDeleted string = "show-deleted"
 
-var flagAppname = flag.String("appname", os.Getenv(envAppVarName), "the appname to identify the creator (or "+envAppVarName+" env) (default: maskedemail-cli)")
+// default / highest level flags
+var flagAppname = flag.String("appname", os.Getenv(envAppVarName), "the appname to identify the creator (or "+envAppVarName+" env) (default: "+defaultAppname+")")
 var flagToken = flag.String("token", "", "the token to authenticate with (or "+envTokenVarName+" env)")
 var flagAccountID = flag.String("accountid", os.Getenv(envAccountIdVarName), "fastmail account id (or "+envAccountIdVarName+" env)")
 
-
+// flags for list command
 var listCmd = flag.NewFlagSet("list", flag.ExitOnError)
-var flagShowDeleted = listCmd.Bool("show-deleted", false, "when enabled even deleted emails are shown, (default: false)")
+var flagShowDeleted = listCmd.Bool("show-deleted", false, "show deleted masked emails (true|false) (default false)")
 
+// flags for create command
 var createCmd = flag.NewFlagSet("create", flag.ExitOnError)
-var flagCreateDomain = createCmd.String(flagNameDomain, "", "domain for the masked email")
-var flagCreateDescription = createCmd.String(flagNameDesc, "", "description for the masked email")
-var flagCreateEnabled = createCmd.Bool(flagNameEnabled, true, "state of the masked email (default: true)")
+var flagCreateDomain = createCmd.String(flagNameDomain, "", "domain for the masked email (optional)")
+var flagCreateDescription = createCmd.String(flagNameDesc, "", "description for the masked email (optional)")
+var flagCreateEnabled = createCmd.Bool(flagNameEnabled, true, "is masked email enabled (true|false)")
 
+// flags for update command
 var updateCmd = flag.NewFlagSet("update", flag.ExitOnError)
-var flagUpdateEmail = updateCmd.String(flagNameEmail, "", "the masked email to update (required)")
-var flagUpdateDomain = updateCmd.String(flagNameDomain, "", "domain for the masked email")
-var flagUpdateDescription = updateCmd.String(flagNameDesc, "", "description for the masked email")
+var flagUpdateEmail = updateCmd.String(flagNameEmail, "", "masked email to update (required)")
+var flagUpdateDomain = updateCmd.String(flagNameDomain, "", "domain for the masked email (optional, only updated if argument passed)")
+var flagUpdateDescription = updateCmd.String(flagNameDesc, "", "description for the masked email (optional, only updated if argument passed)")
 
 var action actionType = actionTypeUnknown
 var envToken string
@@ -70,26 +75,48 @@ func isFlagPassed(set flag.FlagSet, name string) bool {
 
 func init() {
 	flag.Parse()
+	// Define initial help message
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage of %s:\n", os.Args[0])
 		fmt.Println("Flags:")
 		flag.PrintDefaults()
 		fmt.Println("")
 		fmt.Println("Commands:")
-		fmt.Println("  maskedemail-cli create [-domain \"<domain>\"] [-desc \"<description>\"] [-enabled=true|false (default: true)]")
-		fmt.Println("  maskedemail-cli enable <maskedemail>")
-		fmt.Println("  maskedemail-cli disable <maskedemail>")
-		fmt.Println("  maskedemail-cli delete <maskedemail>")
-		fmt.Println("  maskedemail-cli update -email <maskedemail> [-domain \"<domain>\"] [-desc \"<description>\"]")
-		fmt.Println("  maskedemail-cli session")
-		fmt.Println("  maskedemail-cli list [-show-deleted]")
+
+		// create
+		fmt.Printf("  %s %s [-%s \"<domain>\"] [-%s \"<description>\"] [-%s=true|false (default: true)]\n",
+					defaultAppname, actionTypeCreate, flagNameDomain, flagNameDesc, flagNameEnabled)
+
+		// list
+		fmt.Printf("  %s %s [-%s (default: false)]\n",
+					defaultAppname, actionTypeList, flagNameShowDeleted)
+
+		// enable
+		fmt.Printf("  %s %s <maskedemail>\n",
+					defaultAppname, actionTypeEnable)
+
+		// disable
+		fmt.Printf("  %s %s <maskedemail>\n",
+					defaultAppname, actionTypeDisable)
+
+		// delete
+		fmt.Printf("  %s %s <maskedemail>\n",
+					defaultAppname, actionTypeDelete)
+
+		// update
+		fmt.Printf("  %s %s -%s <maskedemail> [-%s \"<domain>\"] [-%s \"<description>\"]\n",
+					defaultAppname, actionTypeUpdate, flagNameEmail, flagNameDomain, flagNameDesc)
+
+		// session
+		fmt.Printf("  %s %s\n",
+					defaultAppname, actionTypeSession)
 	}
 
-	if len(flag.Args()) < 1 {
-		log.Println("no argument given. currently supported: create, session, enable, disable, delete, update, list")
-		flag.Usage()
-		os.Exit(1)
-	}
+	// if len(flag.Args()) < 1 {
+	// 	log.Println("no argument given. currently supported: create, session, enable, disable, delete, update, list")
+	// 	flag.Usage()
+	// 	os.Exit(1)
+	// }
 
 	// CLI parameter have precedence over ENV variables
 	if *flagToken == "" {
@@ -185,13 +212,16 @@ func main() {
 
 		createRes, err := client.CreateMaskedEmail(session, *flagAccountID, domain, *flagCreateEnabled, description)
 		if err != nil {
-			log.Fatalf("err while creating maskedemail: %v", err)
+			log.Fatalf("error creating masked email: %v", err)
 		}
 
+		// success output
 		fmt.Println(createRes.Email)
 
 	case actionTypeDisable:
-		if flag.Arg(1) == "" {
+		maskedemail := strings.TrimSpace(flag.Arg(1))
+
+		if maskedemail == "" {
 			log.Fatalln("Usage: disable <maskedemail>")
 		}
 
@@ -200,16 +230,19 @@ func main() {
 			log.Fatalf("initializing session: %v", err)
 		}
 
-		_, err = client.DisableMaskedEmail(session, *flagAccountID, flag.Arg(1))
+		_, err = client.DisableMaskedEmail(session, *flagAccountID, maskedemail)
 		if err != nil {
-			log.Fatalf("err disabling maskedemail: %v", err)
+			log.Fatalf("error disabling masked email: %v", err)
 		}
 
-		fmt.Printf("disabled email: %s\n", flag.Arg(1))
+		// success output
+		fmt.Printf("disabled masked email: %s\n", maskedemail)
 
 	case actionTypeEnable:
-		if flag.Arg(1) == "" {
-			log.Fatalln("Usage: enable <email>")
+		maskedemail := strings.TrimSpace(flag.Arg(1))
+
+		if maskedemail == "" {
+			log.Fatalln("Usage: enable <maskedemail>")
 		}
 
 		session, err := client.Session()
@@ -217,16 +250,19 @@ func main() {
 			log.Fatalf("initializing session: %v", err)
 		}
 
-		_, err = client.EnableMaskedEmail(session, *flagAccountID, flag.Arg(1))
+		_, err = client.EnableMaskedEmail(session, *flagAccountID, maskedemail)
 		if err != nil {
-			log.Fatalf("err while updating maskedemail: %v", err)
+			log.Fatalf("error enabling masked email: %v", err)
 		}
 
-		fmt.Printf("enabled maskedemail: %s\n", flag.Arg(1))
+		// success output
+		fmt.Printf("enabled masked email: %s\n", maskedemail)
 
 	case actionTypeDelete:
-		if flag.Arg(1) == "" {
-			log.Fatalln("Usage: delete <email>")
+		maskedemail := strings.TrimSpace(flag.Arg(1))
+
+		if maskedemail == "" {
+			log.Fatalln("Usage: delete <maskedemail>")
 		}
 
 		session, err := client.Session()
@@ -234,12 +270,13 @@ func main() {
 			log.Fatalf("initializing session: %v", err)
 		}
 
-		_, err = client.DeleteMaskedEmail(session, *flagAccountID, flag.Arg(1))
+		_, err = client.DeleteMaskedEmail(session, *flagAccountID, maskedemail)
 		if err != nil {
-			log.Fatalf("err while deleting maskedemail: %v", err)
+			log.Fatalf("error deleting masked email: %v", err)
 		}
 
-		fmt.Printf("deleted maskedemail: %s\n", flag.Arg(1))
+		// success output
+		fmt.Printf("deleted masked email: %s\n", maskedemail)
 
 	case actionTypeList:
 		// parse command-specific args
@@ -256,14 +293,25 @@ func main() {
 		}
 
 		w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
+
+		// display header line
 		fmt.Fprintln(w, "Masked Email\tFor Domain\tDescription\tState\tLast Email At\tCreated At")
+
+		// display each masked email
 		for _, email := range maskedEmails {
+			// skip deleted masked emails unless flag to show is passed
 			if email.State == "deleted" && !*flagShowDeleted {
 				continue
 			}
 
 			// HACK: trim space here is for hack to deal with possible empty strings
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", email.Email, strings.TrimSpace(email.Domain), strings.TrimSpace(email.Description), email.State, email.LastMessageAt, email.CreatedAt)
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n",
+				email.Email,
+				strings.TrimSpace(email.Domain),
+				strings.TrimSpace(email.Description),
+				email.State,
+				email.LastMessageAt,
+				email.CreatedAt)
 		}
 		w.Flush()
 
@@ -293,13 +341,13 @@ func main() {
 
 		_, err = client.UpdateInfo(session, *flagAccountID, maskedemail, fields)
 		if err != nil {
-			log.Fatalf("err updating maskedemail: %v", err)
+			log.Fatalf("error updating masked email: %v", err)
 		}
 
 		fmt.Printf("updated %s\n", maskedemail)
 
 	default:
-		fmt.Println("action not found")
+		fmt.Println("action not found\n")
 		flag.Usage()
 		os.Exit(1)
 	}
