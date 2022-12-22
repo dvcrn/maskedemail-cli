@@ -59,8 +59,8 @@ type MethodCallCreate struct {
 }
 
 type UpdatePayload struct {
-	State string `json:"state,omitempty"`
-	Domain string `json:"forDomain,omitempty"`
+	State       string `json:"state,omitempty"`
+	Domain      string `json:"forDomain,omitempty"`
 	Description string `json:"description,omitempty"`
 }
 
@@ -92,59 +92,48 @@ const (
 )
 
 type MethodCallUpdate struct {
-	AccountID string                 `json:"accountId,omitempty"`
+	AccountID string                   `json:"accountId,omitempty"`
 	Update    map[string]UpdatePayload `json:"update,omitempty"`
 }
 
-// NewMethodCallUpdateState creates a new method call to update a maskedemail.
-// This is for example used when a temporary email is converted into a finalized one.
-func NewMethodCallUpdateState(accID, alias string, state MaskedEmailState) MethodCallUpdate {
+// NewMethodCallUpdate creates a new method call to update a maskedemail.
+func NewMethodCallUpdate(accID, alias string, fields *UpdateFields) MethodCallUpdate {
 	mesp := MethodCallUpdate{}
 	mesp.AccountID = accID
+
+  var state MaskedEmailState = "";
+	if fields.isStateSet {
+		state = fields.state
+	}
+
+  var domain string = "";
+	if fields.isDomainSet {
+		// HACK: to make it appear the value is cleared out, set to a single space
+		//  if left as empty string, the conversion to json's
+		//  omitempty will not pass value in request and it won't get changed
+		if fields.domain == "" {
+			domain = " "
+		} else {
+			domain = fields.domain
+		}
+	}
+
+	var description string = "";
+	if fields.isDescriptionSet {
+		// HACK: to make it appear the value is cleared out, set to a single space
+		//  if left as empty string, the conversion to json's
+		//  omitempty will not pass value in request and it won't get changed
+		if fields.description == "" {
+			description = " "
+		} else {
+			description = fields.description
+		}
+	}
+
 	mesp.Update = map[string]UpdatePayload{
 		alias: {
 			State: string(state),
-		},
-	}
-
-	return mesp
-}
-
-// NewMethodCallUpdateDomain creates a new method call to update a maskedemail.
-func NewMethodCallUpdateDomain(accID, alias string, domain string) MethodCallUpdate {
-	mesp := MethodCallUpdate{}
-	mesp.AccountID = accID
-
-	// HACK: to make it appear the value is cleared out
-	//  if left as empty string, the conversion to json's
-	//  omitempty will not pass value in request and it won't get changed
-	if domain == "" {
-		domain = " "
-	}
-
-	mesp.Update = map[string]UpdatePayload{
-		alias: {
 			Domain: string(domain),
-		},
-	}
-
-	return mesp
-}
-
-// NewMethodCallUpdateDescription creates a new method call to update a maskedemail.
-func NewMethodCallUpdateDescription(accID, alias string, description string) MethodCallUpdate {
-	mesp := MethodCallUpdate{}
-	mesp.AccountID = accID
-
-	// HACK: to make it appear the value is cleared out
-	//  if left as empty string, the conversion to json's
-	//  omitempty will not pass value in request and it won't get changed
-	if description == "" {
-		description = " "
-	}
-
-	mesp.Update = map[string]UpdatePayload{
-		alias: {
 			Description: string(description),
 		},
 	}
