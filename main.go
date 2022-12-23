@@ -12,6 +12,12 @@ import (
 	"github.com/dvcrn/maskedemail-cli/pkg"
 )
 
+// build info values get passed in from makefile via `-ldflags` argument to `go build`
+//   they only exist if within a git repo, otherwise use defaults below
+// version is based on a git tag "vX.Y.Z" existing
+var buildVersion string = "development"
+var buildCommit string = "n/a"
+
 const envTokenVarName string = "MASKEDEMAIL_TOKEN"
 const envAppVarName string = "MASKEDEMAIL_APPNAME"
 const envAccountIdVarName string = "MASKEDEMAIL_ACCOUNTID"
@@ -27,6 +33,7 @@ const flagNameShowDeleted string = "show-deleted"
 var flagAppname = flag.String("appname", os.Getenv(envAppVarName), "the appname to identify the creator (or "+envAppVarName+" env) (default: "+defaultAppname+")")
 var flagToken = flag.String("token", "", "the token to authenticate with (or "+envTokenVarName+" env)")
 var flagAccountID = flag.String("accountid", os.Getenv(envAccountIdVarName), "fastmail account id (or "+envAccountIdVarName+" env)")
+var flagVersion = flag.Bool("version", false, "display the version of " + defaultAppname)
 
 // flags for list command
 var listCmd = flag.NewFlagSet("list", flag.ExitOnError)
@@ -58,6 +65,7 @@ const (
 	actionTypeDelete             = "delete"
 	actionTypeUpdate             = "update"
 	actionTypeList               = "list"
+	actionTypeVersion            = "version"
 	defaultAppname               = "maskedemail-cli"
 )
 
@@ -153,9 +161,17 @@ func init() {
 }
 
 func main() {
+
+	if *flagVersion {
+		fmt.Printf("version: %s\n", buildVersion)
+		fmt.Printf("commit: %s\n", buildCommit)
+		os.Exit(0)
+	}
+
 	client := pkg.NewClient(*flagToken, *flagAppname, "35c941ae")
 
 	switch action {
+
 	case actionTypeSession:
 		session, err := client.Session()
 		if err != nil {
