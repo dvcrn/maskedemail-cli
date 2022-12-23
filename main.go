@@ -12,62 +12,63 @@ import (
 	"github.com/dvcrn/maskedemail-cli/pkg"
 )
 
+type actionType string
+
+const (
+	defaultAppname          string = "maskedemail-cli"
+
+	envTokenVarName 		string = "MASKEDEMAIL_TOKEN"
+	envAppVarName 			string = "MASKEDEMAIL_APPNAME"
+	envAccountIdVarName 	string = "MASKEDEMAIL_ACCOUNTID"
+
+	flagNameEmail			string = "email"
+	flagNameDomain			string = "domain"
+	flagNameDesc			string = "desc"
+	flagNameEnabled			string = "enabled"
+	flagNameShowDeleted		string = "show-deleted"
+
+	actionTypeUnknown		= ""
+	actionTypeCreate        = "create"
+	actionTypeSession       = "session"
+	actionTypeDisable       = "disable"
+	actionTypeEnable        = "enable"
+	actionTypeDelete        = "delete"
+	actionTypeUpdate        = "update"
+	actionTypeList          = "list"
+	actionTypeVersion       = "version"
+
+)
+
 // build info values get passed in from makefile via `-ldflags` argument to `go build`
 //   they only exist if within a git repo, otherwise use defaults below
 // version is based on a git tag "vX.Y.Z" existing
 var buildVersion string = "development"
 var buildCommit string = "n/a"
 
-const envTokenVarName string = "MASKEDEMAIL_TOKEN"
-const envAppVarName string = "MASKEDEMAIL_APPNAME"
-const envAccountIdVarName string = "MASKEDEMAIL_ACCOUNTID"
-
-// common set of flag names that are used in mulitple places
-const flagNameEmail string = "email"
-const flagNameDomain string = "domain"
-const flagNameDesc string = "desc"
-const flagNameEnabled string = "enabled"
-const flagNameShowDeleted string = "show-deleted"
-
 // default / highest level flags
 var flagAppname = flag.String("appname", os.Getenv(envAppVarName), "the appname to identify the creator (or "+envAppVarName+" env) (default: "+defaultAppname+")")
 var flagToken = flag.String("token", "", "the token to authenticate with (or "+envTokenVarName+" env)")
 var flagAccountID = flag.String("accountid", os.Getenv(envAccountIdVarName), "fastmail account id (or "+envAccountIdVarName+" env)")
-var flagVersion = flag.Bool("version", false, "display the version of " + defaultAppname)
+var flagVersion = flag.Bool(actionTypeVersion, false, "display the version of " + defaultAppname)
 
 // flags for list command
-var listCmd = flag.NewFlagSet("list", flag.ExitOnError)
-var flagShowDeleted = listCmd.Bool("show-deleted", false, "show deleted masked emails (true|false) (default false)")
+var listCmd = flag.NewFlagSet(actionTypeList, flag.ExitOnError)
+var flagShowDeleted = listCmd.Bool(flagNameShowDeleted, false, "show deleted masked emails (true|false) (default false)")
 
 // flags for create command
-var createCmd = flag.NewFlagSet("create", flag.ExitOnError)
+var createCmd = flag.NewFlagSet(actionTypeCreate, flag.ExitOnError)
 var flagCreateDomain = createCmd.String(flagNameDomain, "", "domain for the masked email (optional)")
 var flagCreateDescription = createCmd.String(flagNameDesc, "", "description for the masked email (optional)")
 var flagCreateEnabled = createCmd.Bool(flagNameEnabled, true, "is masked email enabled (true|false)")
 
 // flags for update command
-var updateCmd = flag.NewFlagSet("update", flag.ExitOnError)
+var updateCmd = flag.NewFlagSet(actionTypeUpdate, flag.ExitOnError)
 var flagUpdateEmail = updateCmd.String(flagNameEmail, "", "masked email to update (required)")
 var flagUpdateDomain = updateCmd.String(flagNameDomain, "", "domain for the masked email (optional, only updated if argument passed)")
 var flagUpdateDescription = updateCmd.String(flagNameDesc, "", "description for the masked email (optional, only updated if argument passed)")
 
 var action actionType = actionTypeUnknown
 var envToken string
-
-type actionType string
-
-const (
-	actionTypeUnknown            = ""
-	actionTypeCreate             = "create"
-	actionTypeSession            = "session"
-	actionTypeDisable            = "disable"
-	actionTypeEnable             = "enable"
-	actionTypeDelete             = "delete"
-	actionTypeUpdate             = "update"
-	actionTypeList               = "list"
-	actionTypeVersion            = "version"
-	defaultAppname               = "maskedemail-cli"
-)
 
 func isFlagPassed(set flag.FlagSet, name string) bool {
     found := false
@@ -92,11 +93,11 @@ func init() {
 		fmt.Println("Commands:")
 
 		// create
-		fmt.Printf("  %s %s [-%s \"<domain>\"] [-%s \"<description>\"] [-%s=true|false (default: true)]\n",
+		fmt.Printf("  %s %s [-%s \"<domain>\"] [-%s \"<description>\"] [-%s=true|false (default true)]\n",
 					defaultAppname, actionTypeCreate, flagNameDomain, flagNameDesc, flagNameEnabled)
 
 		// list
-		fmt.Printf("  %s %s [-%s (default: false)]\n",
+		fmt.Printf("  %s %s [-%s (default false)]\n",
 					defaultAppname, actionTypeList, flagNameShowDeleted)
 
 		// enable
@@ -137,25 +138,25 @@ func init() {
 
 	switch strings.ToLower(flag.Arg(0)) {
 	case
-		"create":
+		actionTypeCreate:
 		action = actionTypeCreate
 
-	case "session":
+	case actionTypeSession:
 		action = actionTypeSession
 
-	case "disable":
+	case actionTypeDisable:
 		action = actionTypeDisable
 
-	case "enable":
+	case actionTypeEnable:
 		action = actionTypeEnable
 
-	case "delete":
+	case actionTypeDelete:
 		action = actionTypeDelete
 
-	case "list":
+	case actionTypeList:
 		action = actionTypeList
 
-	case "update":
+	case actionTypeUpdate:
 		action = actionTypeUpdate
 	}
 }
