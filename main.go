@@ -112,12 +112,6 @@ func init() {
 					defaultAppname, actionTypeSession)
 	}
 
-	// if len(flag.Args()) < 1 {
-	// 	log.Println("no argument given. currently supported: create, session, enable, disable, delete, update, list")
-	// 	flag.Usage()
-	// 	os.Exit(1)
-	// }
-
 	// CLI parameter have precedence over ENV variables
 	if *flagToken == "" {
 		envToken = os.Getenv(envTokenVarName)

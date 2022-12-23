@@ -142,6 +142,7 @@ func NewMethodCallUpdate(accID, alias string, fields *UpdateFields) MethodCallUp
 }
 
 // MethodCallGetAll is a method call to get all maskedemails for a user.
+/*
 // Request:
 //    "methodCalls" : [
 //      [
@@ -177,6 +178,7 @@ func NewMethodCallUpdate(accID, alias string, fields *UpdateFields) MethodCallUp
 //      ]
 //   ]
 //
+*/
 type MethodCallGetAll struct {
 	AccountID string `json:"accountId,omitempty"`
 }
