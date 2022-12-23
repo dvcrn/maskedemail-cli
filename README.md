@@ -34,28 +34,29 @@ Flags:
       fastmail account id (or MASKEDEMAIL_ACCOUNTID env)
   -appname string
       the appname to identify the creator (or MASKEDEMAIL_APPNAME env) (default: maskedemail-cli)
-  -show-deleted
-      when enabled even deleted emails are shown, (default: false)
   -token string
-      the token to authenticate with (or MASKEDEMAIL_TOKEN env) (default "example-token")
+      the token to authenticate with (or MASKEDEMAIL_TOKEN env)
 
 Commands:
-  maskedemail-cli create <domain> <description>
+  maskedemail-cli create [-domain "<domain>"] [-desc "<description>"] [-enabled=true|false (default true)]
+  maskedemail-cli list [-show-deleted (default false)]
   maskedemail-cli enable <maskedemail>
   maskedemail-cli disable <maskedemail>
+  maskedemail-cli delete <maskedemail>
+  maskedemail-cli update -email <maskedemail> [-domain "<domain>"] [-desc "<description>"]
   maskedemail-cli session
-  maskedemail-cli list
 ```
 
 Example:
 
 ```
-$ maskedemail-cli -token abcdef12345 create facebook.com "Facebook"
+$ maskedemail-cli -token abcdef12345 create  -domain "facebook.com" -desc "Facebook"
 $ maskedemail-cli -token abcdef12345 enable 123@mydomain.com
 $ maskedemail-cli -token abcdef12345 disable 123@mydomain.com
 
-$ maskedemail-cli -token abcdef12345 list | grep facebook
-123@mydomain.com    https://www.facebook.com    Facebook    disabled    2022-08-09T07:49:43Z    2022-07-02T06:34:21Z
+$ maskedemail-cli -token abcdef12345 list
+Masked Email        For Domain     Description   State       Last Email At           Created At
+123@mydomain.com    facebook.com   Facebook      disabled    2022-08-09T07:49:43Z    2022-07-02T06:34:21Z
 ```
 
 ## Other resources and things powered by this CLI 
