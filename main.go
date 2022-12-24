@@ -26,6 +26,7 @@ const (
 	flagNameDesc			string = "desc"
 	flagNameEnabled			string = "enabled"
 	flagNameShowDeleted		string = "show-deleted"
+	flagNameShowAllFields   string = "all-fields"
 
 	actionTypeUnknown		= ""
 	actionTypeCreate        = "create"
@@ -54,6 +55,7 @@ var flagVersion = flag.Bool(actionTypeVersion, false, "display the version of " 
 // flags for list command
 var listCmd = flag.NewFlagSet(actionTypeList, flag.ExitOnError)
 var flagShowDeleted = listCmd.Bool(flagNameShowDeleted, false, "show deleted masked emails (true|false) (default false)")
+var flagShowAllFields = listCmd.Bool(flagNameShowAllFields, false, "show all masked email fields (true|false) (default false)")
 
 // flags for create command
 var createCmd = flag.NewFlagSet(actionTypeCreate, flag.ExitOnError)
@@ -97,8 +99,8 @@ func init() {
 					defaultAppname, actionTypeCreate, flagNameDomain, flagNameDesc, flagNameEnabled)
 
 		// list
-		fmt.Printf("  %s %s [-%s (default false)]\n",
-					defaultAppname, actionTypeList, flagNameShowDeleted)
+		fmt.Printf("  %s %s [-%s] [-%s]\n",
+					defaultAppname, actionTypeList, flagNameShowDeleted, flagNameShowAllFields)
 
 		// enable
 		fmt.Printf("  %s %s <maskedemail>\n",
@@ -163,6 +165,7 @@ func init() {
 
 func main() {
 
+	// handle version flag if passed
 	if *flagVersion {
 		fmt.Printf("version: %s\n", buildVersion)
 		fmt.Printf("commit: %s\n", buildCommit)
@@ -306,7 +309,11 @@ func main() {
 		w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 
 		// display header line
-		fmt.Fprintln(w, "Masked Email\tFor Domain\tDescription\tState\tLast Email At\tCreated At")
+		if *flagShowAllFields {
+			fmt.Fprintln(w, "ID\tMasked Email\tFor Domain\tDescription\tState\tLast Email At\tCreated At")
+		} else {
+			fmt.Fprintln(w, "Masked Email\tFor Domain\tDescription\tState")
+		}
 
 		// display each masked email
 		for _, email := range maskedEmails {
@@ -316,13 +323,22 @@ func main() {
 			}
 
 			// HACK: trim space here is for hack to deal with possible empty strings
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n",
-				email.Email,
-				strings.TrimSpace(email.Domain),
-				strings.TrimSpace(email.Description),
-				email.State,
-				email.LastMessageAt,
-				email.CreatedAt)
+			if *flagShowAllFields {
+				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+					email.ID,
+					email.Email,
+					strings.TrimSpace(email.Domain),
+					strings.TrimSpace(email.Description),
+					email.State,
+					email.LastMessageAt,
+					email.CreatedAt)
+			} else {
+				fmt.Fprintf(w, "%s\t%s\t%s\t%s\n",
+					email.Email,
+					strings.TrimSpace(email.Domain),
+					strings.TrimSpace(email.Description),
+					email.State)
+			}
 		}
 		w.Flush()
 
