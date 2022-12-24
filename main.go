@@ -310,7 +310,7 @@ func main() {
 
 		// display header line
 		if *flagShowAllFields {
-			fmt.Fprintln(w, "ID\tMasked Email\tFor Domain\tDescription\tState\tLast Email At\tCreated At")
+			fmt.Fprintln(w, "Masked Email\tFor Domain\tDescription\tState\tID\tCreated At\tLast Email At")
 		} else {
 			fmt.Fprintln(w, "Masked Email\tFor Domain\tDescription\tState")
 		}
@@ -325,13 +325,13 @@ func main() {
 			// HACK: trim space here is for hack to deal with possible empty strings
 			if *flagShowAllFields {
 				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
-					email.ID,
 					email.Email,
 					strings.TrimSpace(email.Domain),
 					strings.TrimSpace(email.Description),
 					email.State,
-					email.LastMessageAt,
-					email.CreatedAt)
+					email.ID,
+					email.CreatedAt,
+					email.LastMessageAt)
 			} else {
 				fmt.Fprintf(w, "%s\t%s\t%s\t%s\n",
 					email.Email,
