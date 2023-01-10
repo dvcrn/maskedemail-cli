@@ -21,6 +21,9 @@ const (
 	envAppVarName 			string = "MASKEDEMAIL_APPNAME"
 	envAccountIdVarName 	string = "MASKEDEMAIL_ACCOUNTID"
 
+	flagNameToken           string = "token"
+	flagNameAccountID       string = "accountid"
+
 	flagNameEmail			string = "email"
 	flagNameDomain			string = "domain"
 	flagNameDesc			string = "desc"
@@ -48,9 +51,9 @@ var buildCommit string = "n/a"
 
 // default / highest level flags
 var flagAppname = flag.String("appname", os.Getenv(envAppVarName), "the appname to identify the creator (or "+envAppVarName+" env) (default: "+defaultAppname+")")
-var flagToken = flag.String("token", "", "the token to authenticate with (or "+envTokenVarName+" env)")
-var flagAccountID = flag.String("accountid", os.Getenv(envAccountIdVarName), "fastmail account id (or "+envAccountIdVarName+" env)")
 var flagVersion = flag.Bool(actionTypeVersion, false, "display the version of " + defaultAppname)
+var flagToken = flag.String(flagNameToken, "", "the token to authenticate with (or "+envTokenVarName+" env)")
+var flagAccountID = flag.String(flagNameAccountID, os.Getenv(envAccountIdVarName), "fastmail account id (or "+envAccountIdVarName+" env)")
 
 // flags for list command
 var listCmd = flag.NewFlagSet(actionTypeList, flag.ExitOnError)
@@ -69,7 +72,9 @@ var flagUpdateEmail = updateCmd.String(flagNameEmail, "", "masked email to updat
 var flagUpdateDomain = updateCmd.String(flagNameDomain, "", "domain for the masked email (optional, only updated if argument passed)")
 var flagUpdateDescription = updateCmd.String(flagNameDesc, "", "description for the masked email (optional, only updated if argument passed)")
 
+var args []string
 var action actionType = actionTypeUnknown
+var commandArg  string
 var envToken string
 
 func isFlagPassed(set flag.FlagSet, name string) bool {
@@ -86,10 +91,14 @@ func isFlagPassed(set flag.FlagSet, name string) bool {
 
 func init() {
 	flag.Parse()
+
+	// get all args after the global args
+	args = flag.Args()
+
 	// Define initial help message
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage of %s:\n", os.Args[0])
-		fmt.Println("Flags:")
+		fmt.Println("Global Flags:")
 		flag.PrintDefaults()
 		fmt.Println("")
 		fmt.Println("Commands:")
@@ -123,6 +132,8 @@ func init() {
 					defaultAppname, actionTypeSession)
 	}
 
+	// Check global arguments:
+
 	// CLI parameter have precedence over ENV variables
 	if *flagToken == "" {
 		envToken = os.Getenv(envTokenVarName)
@@ -138,9 +149,16 @@ func init() {
 		*flagAppname = defaultAppname
 	}
 
-	switch strings.ToLower(flag.Arg(0)) {
-	case
-		actionTypeCreate:
+
+	// determine command/subcommand
+	commandArg = ""
+	if len(args) > 0 {
+		commandArg = strings.ToLower(args[0])
+	}
+
+	switch commandArg {
+
+	case actionTypeCreate:
 		action = actionTypeCreate
 
 	case actionTypeSession:
@@ -214,7 +232,7 @@ func main() {
 
 	case actionTypeCreate:
 		// parse command-specific args
-		createCmd.Parse(os.Args[2:])
+		createCmd.Parse(args[1:])
 
 		domain := strings.TrimSpace(*flagCreateDomain)
 		description := strings.TrimSpace(*flagCreateDescription)
@@ -233,7 +251,7 @@ func main() {
 		fmt.Println(createRes.Email)
 
 	case actionTypeDisable:
-		maskedemail := strings.TrimSpace(flag.Arg(1))
+		maskedemail := strings.TrimSpace(args[1])
 
 		if maskedemail == "" {
 			log.Fatalln("Usage: disable <maskedemail>")
@@ -253,7 +271,7 @@ func main() {
 		fmt.Printf("disabled masked email: %s\n", maskedemail)
 
 	case actionTypeEnable:
-		maskedemail := strings.TrimSpace(flag.Arg(1))
+		maskedemail := strings.TrimSpace(args[1])
 
 		if maskedemail == "" {
 			log.Fatalln("Usage: enable <maskedemail>")
@@ -273,7 +291,7 @@ func main() {
 		fmt.Printf("enabled masked email: %s\n", maskedemail)
 
 	case actionTypeDelete:
-		maskedemail := strings.TrimSpace(flag.Arg(1))
+		maskedemail := strings.TrimSpace(args[1])
 
 		if maskedemail == "" {
 			log.Fatalln("Usage: delete <maskedemail>")
@@ -294,7 +312,7 @@ func main() {
 
 	case actionTypeList:
 		// parse command-specific args
-		listCmd.Parse(os.Args[2:])
+		listCmd.Parse(args[1:])
 
 		session, err := client.Session()
 		if err != nil {
@@ -344,7 +362,7 @@ func main() {
 
 	case actionTypeUpdate:
 		// parse command-specific args
-		updateCmd.Parse(os.Args[2:])
+		updateCmd.Parse(args[1:])
 
 		maskedemail := strings.TrimSpace(*flagUpdateEmail)
 		domain := strings.TrimSpace(*flagUpdateDomain)
