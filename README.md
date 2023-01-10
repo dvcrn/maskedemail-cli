@@ -36,8 +36,6 @@ Flags:
       the appname to identify the creator (or MASKEDEMAIL_APPNAME env) (default: maskedemail-cli)
   -token string
       the token to authenticate with (or MASKEDEMAIL_TOKEN env)
-  -version
-      display the version of maskedemail-cli
 
 Commands:
   maskedemail-cli create [-domain "<domain>"] [-desc "<description>"] [-enabled=true|false (default true)]
@@ -47,6 +45,7 @@ Commands:
   maskedemail-cli delete <maskedemail>
   maskedemail-cli update -email <maskedemail> [-domain "<domain>"] [-desc "<description>"]
   maskedemail-cli session
+  maskedemail-cli version
 ```
 
 Example:
@@ -61,7 +60,7 @@ Masked Email        For Domain     Description   State
 123@mydomain.com    facebook.com   Facebook      disabled
 ```
 
-## Other resources and things powered by this CLI 
+## Other resources and things powered by this CLI
 
 _Note that these are based on an earlier version of the CLI._
 
