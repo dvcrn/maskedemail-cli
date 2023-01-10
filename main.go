@@ -51,7 +51,6 @@ var buildCommit string = "n/a"
 
 // default / highest level flags
 var flagAppname = flag.String("appname", os.Getenv(envAppVarName), "the appname to identify the creator (or "+envAppVarName+" env) (default: "+defaultAppname+")")
-var flagVersion = flag.Bool(actionTypeVersion, false, "display the version of " + defaultAppname)
 var flagToken = flag.String(flagNameToken, "", "the token to authenticate with (or "+envTokenVarName+" env)")
 var flagAccountID = flag.String(flagNameAccountID, os.Getenv(envAccountIdVarName), "fastmail account id (or "+envAccountIdVarName+" env)")
 
@@ -72,10 +71,10 @@ var flagUpdateEmail = updateCmd.String(flagNameEmail, "", "masked email to updat
 var flagUpdateDomain = updateCmd.String(flagNameDomain, "", "domain for the masked email (optional, only updated if argument passed)")
 var flagUpdateDescription = updateCmd.String(flagNameDesc, "", "description for the masked email (optional, only updated if argument passed)")
 
-var args []string
-var action actionType = actionTypeUnknown
+var args        []string
+var action      actionType = actionTypeUnknown
 var commandArg  string
-var envToken string
+var envToken    string
 
 func isFlagPassed(set flag.FlagSet, name string) bool {
     found := false
@@ -130,6 +129,10 @@ func init() {
 		// session
 		fmt.Printf("  %s %s\n",
 					defaultAppname, actionTypeSession)
+
+		// version
+		fmt.Printf("  %s %s\n",
+					defaultAppname, actionTypeVersion)
 	}
 
 	// Check global arguments:
@@ -158,6 +161,9 @@ func init() {
 
 	switch commandArg {
 
+	case actionTypeVersion:
+		action = actionTypeVersion
+
 	case actionTypeCreate:
 		action = actionTypeCreate
 
@@ -183,16 +189,13 @@ func init() {
 
 func main() {
 
-	// handle version flag if passed
-	if *flagVersion {
-		fmt.Printf("version: %s\n", buildVersion)
-		fmt.Printf("commit: %s\n", buildCommit)
-		os.Exit(0)
-	}
-
 	client := pkg.NewClient(*flagToken, *flagAppname, "35c941ae")
 
 	switch action {
+
+	case actionTypeVersion:
+		fmt.Printf("version: %s\n", buildVersion)
+		fmt.Printf("commit: %s\n", buildCommit)
 
 	case actionTypeSession:
 		session, err := client.Session()
