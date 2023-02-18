@@ -43,7 +43,7 @@ Commands:
   maskedemail-cli enable <maskedemail>
   maskedemail-cli disable <maskedemail>
   maskedemail-cli delete <maskedemail>
-  maskedemail-cli update -email <maskedemail> [-domain "<domain>"] [-desc "<description>"]
+  maskedemail-cli update <maskedemail> [-domain "<domain>"] [-desc "<description>"]
   maskedemail-cli session
   maskedemail-cli version
 ```
