@@ -134,11 +134,17 @@ func init() {
 		fmt.Printf("  %s %s\n",
 			defaultAppname, actionTypeVersion)
 	}
+	
+	// determine command/subcommand
+	commandArg = ""
+	if len(args) > 0 {
+		commandArg = strings.ToLower(args[0])
+	}
 
 	// Check global arguments:
 
 	// CLI parameter have precedence over ENV variables
-	if *flagToken == "" {
+	if *flagToken == "" && commandArg != actionTypeVersion {
 		envToken = os.Getenv(envTokenVarName)
 		if envToken != "" {
 			*flagToken = envToken
@@ -150,12 +156,6 @@ func init() {
 
 	if *flagAppname == "" {
 		*flagAppname = defaultAppname
-	}
-
-	// determine command/subcommand
-	commandArg = ""
-	if len(args) > 0 {
-		commandArg = strings.ToLower(args[0])
 	}
 
 	switch commandArg {
