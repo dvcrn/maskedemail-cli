@@ -41,27 +41,6 @@ type Session interface {
 	DefaultAccountForCapability(capabilityURI string) string
 }
 
-type UpdateFields struct {
-	isStateSet	     bool
-	state            MaskedEmailState
-	isDomainSet      bool
-	domain           string
-	isDescriptionSet bool
-	description      string
-}
-
-func NewUpdateFields(isDomainSet bool,
-					 domain string,
-					 isDescriptionSet bool,
-					 description string) *UpdateFields {
-	return &UpdateFields{
-		isDomainSet:      isDomainSet,
-		domain:           domain,
-		isDescriptionSet: isDescriptionSet,
-		description:      description,
-	}
-}
-
 type Client struct {
 	auth     string
 	clientID string
@@ -215,7 +194,7 @@ func (client *Client) UpdateMaskedEmail(
 	session Session,
 	accID string,
 	emailID string,
-	fields *UpdateFields,
+	updateOpts ...UpdateOption,
 ) (*MethodResponseMaskedEmailSet, error) {
 
 	accID, err := client.accIDOrDefault(session, accID)
@@ -224,7 +203,7 @@ func (client *Client) UpdateMaskedEmail(
 	}
 
 	// handle more than one with a value at once?
-	var payload MethodCallUpdate = NewMethodCallUpdate(accID, emailID, fields)
+	var payload MethodCallUpdate = NewMethodCallUpdate(accID, emailID, updateOpts...)
 
 	r := MethodCall{
 		MethodName: "MaskedEmail/set",
@@ -288,16 +267,13 @@ func (client *Client) EnableMaskedEmail(
 	accID string,
 	email string,
 ) (*MethodResponseMaskedEmailSet, error) {
-
 	emailID, err := client.LookupMaskedEmailID(session, accID, email)
 
 	if err != nil {
 		return nil, err
 	}
 
-	fields := UpdateFields{ isStateSet: true, state: MaskedEmailStateEnabled };
-
-	return client.UpdateMaskedEmail(session, accID, emailID, &fields)
+	return client.UpdateMaskedEmail(session, accID, emailID, WithUpdateState(MaskedEmailStateEnabled))
 }
 
 func (client *Client) DisableMaskedEmail(
@@ -312,9 +288,7 @@ func (client *Client) DisableMaskedEmail(
 		return nil, err
 	}
 
-	fields := UpdateFields{ isStateSet: true, state: MaskedEmailStateDisabled };
-
-	return client.UpdateMaskedEmail(session, accID, emailID, &fields)
+	return client.UpdateMaskedEmail(session, accID, emailID, WithUpdateState(MaskedEmailStateDisabled))
 }
 
 func (client *Client) DeleteMaskedEmail(
@@ -329,16 +303,14 @@ func (client *Client) DeleteMaskedEmail(
 		return nil, err
 	}
 
-	fields := UpdateFields{ isStateSet: true, state: MaskedEmailStateDeleted };
-
-	return client.UpdateMaskedEmail(session, accID, emailID, &fields)
+	return client.UpdateMaskedEmail(session, accID, emailID, WithUpdateState(MaskedEmailStateDeleted))
 }
 
 func (client *Client) UpdateInfo(
 	session Session,
 	accID string,
 	email string,
-	fields *UpdateFields,
+	updateOpts ...UpdateOption,
 ) (*MethodResponseMaskedEmailSet, error) {
 
 	emailID, err := client.LookupMaskedEmailID(session, accID, email)
@@ -347,7 +319,7 @@ func (client *Client) UpdateInfo(
 		return nil, err
 	}
 
-	return client.UpdateMaskedEmail(session, accID, emailID, fields)
+	return client.UpdateMaskedEmail(session, accID, emailID, updateOpts...)
 }
 
 func (client *Client) GetAllMaskedEmails(

@@ -2,6 +2,14 @@ package pkg
 
 import "encoding/json"
 
+type MaskedEmailState string
+
+const (
+	MaskedEmailStateEnabled  MaskedEmailState = "enabled"
+	MaskedEmailStateDisabled                  = "disabled"
+	MaskedEmailStateDeleted                   = "deleted"
+)
+
 type APIRequest struct {
 	Using       []string     `json:"using,omitempty"`
 	MethodCalls []MethodCall `json:"methodCalls,omitempty"`
@@ -64,6 +72,32 @@ type UpdatePayload struct {
 	Description string `json:"description,omitempty"`
 }
 
+type UpdateOption func(c *UpdatePayload)
+
+func WithUpdateDomain(domain string) UpdateOption {
+	return func(f *UpdatePayload) {
+		if domain == "" {
+			domain = " "
+		}
+		f.Domain = domain
+	}
+}
+
+func WithUpdateState(state MaskedEmailState) UpdateOption {
+	return func(f *UpdatePayload) {
+		f.State = string(state)
+	}
+}
+
+func WithUpdateDescription(desc string) UpdateOption {
+	return func(f *UpdatePayload) {
+		if desc == "" {
+			desc = " "
+		}
+		f.Description = desc
+	}
+}
+
 // NewMethodCallCreate creates a new method call to create a new maskedemail.
 // accID is the users account ID.
 // appName is the name to identify the app that created the maskedemail.
@@ -83,59 +117,23 @@ func NewMethodCallCreate(accID, appName, domain string, state string, descriptio
 	return mesp
 }
 
-type MaskedEmailState string
-
-const (
-	MaskedEmailStateEnabled  MaskedEmailState = "enabled"
-	MaskedEmailStateDisabled                  = "disabled"
-	MaskedEmailStateDeleted                   = "deleted"
-)
-
 type MethodCallUpdate struct {
 	AccountID string                   `json:"accountId,omitempty"`
 	Update    map[string]UpdatePayload `json:"update,omitempty"`
 }
 
 // NewMethodCallUpdate creates a new method call to update a maskedemail.
-func NewMethodCallUpdate(accID, alias string, fields *UpdateFields) MethodCallUpdate {
+func NewMethodCallUpdate(accID, alias string, updateOpts ...UpdateOption) MethodCallUpdate {
 	mesp := MethodCallUpdate{}
 	mesp.AccountID = accID
 
-  var state MaskedEmailState = "";
-	if fields.isStateSet {
-		state = fields.state
-	}
-
-  var domain string = "";
-	if fields.isDomainSet {
-		// HACK: to make it appear the value is cleared out, set to a single space
-		//  if left as empty string, the conversion to json's
-		//  omitempty will not pass value in request and it won't get changed
-		if fields.domain == "" {
-			domain = " "
-		} else {
-			domain = fields.domain
-		}
-	}
-
-	var description string = "";
-	if fields.isDescriptionSet {
-		// HACK: to make it appear the value is cleared out, set to a single space
-		//  if left as empty string, the conversion to json's
-		//  omitempty will not pass value in request and it won't get changed
-		if fields.description == "" {
-			description = " "
-		} else {
-			description = fields.description
-		}
+	payload := &UpdatePayload{}
+	for _, opt := range updateOpts {
+		opt(payload)
 	}
 
 	mesp.Update = map[string]UpdatePayload{
-		alias: {
-			State: string(state),
-			Domain: string(domain),
-			Description: string(description),
-		},
+		alias: *payload,
 	}
 
 	return mesp

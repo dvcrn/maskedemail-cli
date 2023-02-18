@@ -15,36 +15,37 @@ import (
 type actionType string
 
 const (
-	defaultAppname          string = "maskedemail-cli"
+	defaultAppname string = "maskedemail-cli"
 
-	envTokenVarName 		string = "MASKEDEMAIL_TOKEN"
-	envAppVarName 			string = "MASKEDEMAIL_APPNAME"
-	envAccountIdVarName 	string = "MASKEDEMAIL_ACCOUNTID"
+	envTokenVarName     string = "MASKEDEMAIL_TOKEN"
+	envAppVarName       string = "MASKEDEMAIL_APPNAME"
+	envAccountIdVarName string = "MASKEDEMAIL_ACCOUNTID"
 
-	flagNameToken           string = "token"
-	flagNameAccountID       string = "accountid"
+	flagNameToken     string = "token"
+	flagNameAccountID string = "accountid"
 
-	flagNameEmail			string = "email"
-	flagNameDomain			string = "domain"
-	flagNameDesc			string = "desc"
-	flagNameEnabled			string = "enabled"
-	flagNameShowDeleted		string = "show-deleted"
-	flagNameShowAllFields   string = "all-fields"
+	flagNameEmail         string = "email"
+	flagNameDomain        string = "domain"
+	flagNameDesc          string = "desc"
+	flagNameEnabled       string = "enabled"
+	flagNameShowDeleted   string = "show-deleted"
+	flagNameShowAllFields string = "all-fields"
 
-	actionTypeUnknown		= ""
-	actionTypeCreate        = "create"
-	actionTypeSession       = "session"
-	actionTypeDisable       = "disable"
-	actionTypeEnable        = "enable"
-	actionTypeDelete        = "delete"
-	actionTypeUpdate        = "update"
-	actionTypeList          = "list"
-	actionTypeVersion       = "version"
-
+	actionTypeUnknown = ""
+	actionTypeCreate  = "create"
+	actionTypeSession = "session"
+	actionTypeDisable = "disable"
+	actionTypeEnable  = "enable"
+	actionTypeDelete  = "delete"
+	actionTypeUpdate  = "update"
+	actionTypeList    = "list"
+	actionTypeVersion = "version"
 )
 
 // build info values get passed in from makefile via `-ldflags` argument to `go build`
-//   they only exist if within a git repo, otherwise use defaults below
+//
+//	they only exist if within a git repo, otherwise use defaults below
+//
 // version is based on a git tag "vX.Y.Z" existing
 var buildVersion string = "development"
 var buildCommit string = "n/a"
@@ -67,25 +68,24 @@ var flagCreateEnabled = createCmd.Bool(flagNameEnabled, true, "is masked email e
 
 // flags for update command
 var updateCmd = flag.NewFlagSet(actionTypeUpdate, flag.ExitOnError)
-var flagUpdateEmail = updateCmd.String(flagNameEmail, "", "masked email to update (required)")
 var flagUpdateDomain = updateCmd.String(flagNameDomain, "", "domain for the masked email (optional, only updated if argument passed)")
 var flagUpdateDescription = updateCmd.String(flagNameDesc, "", "description for the masked email (optional, only updated if argument passed)")
 
-var args        []string
-var action      actionType = actionTypeUnknown
-var commandArg  string
-var envToken    string
+var args []string
+var action actionType = actionTypeUnknown
+var commandArg string
+var envToken string
 
 func isFlagPassed(set flag.FlagSet, name string) bool {
-    found := false
-    //fmt.Printf("name: %s\n", name)
-    set.Visit(func(f *flag.Flag) {
-    //	fmt.Printf("f.Name: %s\n", f.Name)
-        if f.Name == name {
-            found = true
-        }
-    })
-    return found
+	found := false
+	//fmt.Printf("name: %s\n", name)
+	set.Visit(func(f *flag.Flag) {
+		//	fmt.Printf("f.Name: %s\n", f.Name)
+		if f.Name == name {
+			found = true
+		}
+	})
+	return found
 }
 
 func init() {
@@ -104,35 +104,35 @@ func init() {
 
 		// create
 		fmt.Printf("  %s %s [-%s \"<domain>\"] [-%s \"<description>\"] [-%s=true|false (default true)]\n",
-					defaultAppname, actionTypeCreate, flagNameDomain, flagNameDesc, flagNameEnabled)
+			defaultAppname, actionTypeCreate, flagNameDomain, flagNameDesc, flagNameEnabled)
 
 		// list
 		fmt.Printf("  %s %s [-%s] [-%s]\n",
-					defaultAppname, actionTypeList, flagNameShowDeleted, flagNameShowAllFields)
+			defaultAppname, actionTypeList, flagNameShowDeleted, flagNameShowAllFields)
 
 		// enable
 		fmt.Printf("  %s %s <maskedemail>\n",
-					defaultAppname, actionTypeEnable)
+			defaultAppname, actionTypeEnable)
 
 		// disable
 		fmt.Printf("  %s %s <maskedemail>\n",
-					defaultAppname, actionTypeDisable)
+			defaultAppname, actionTypeDisable)
 
 		// delete
 		fmt.Printf("  %s %s <maskedemail>\n",
-					defaultAppname, actionTypeDelete)
+			defaultAppname, actionTypeDelete)
 
 		// update
-		fmt.Printf("  %s %s -%s <maskedemail> [-%s \"<domain>\"] [-%s \"<description>\"]\n",
-					defaultAppname, actionTypeUpdate, flagNameEmail, flagNameDomain, flagNameDesc)
+		fmt.Printf("  %s %s <maskedemail> [-%s \"<domain>\"] [-%s \"<description>\"]\n",
+			defaultAppname, actionTypeUpdate, flagNameDomain, flagNameDesc)
 
 		// session
 		fmt.Printf("  %s %s\n",
-					defaultAppname, actionTypeSession)
+			defaultAppname, actionTypeSession)
 
 		// version
 		fmt.Printf("  %s %s\n",
-					defaultAppname, actionTypeVersion)
+			defaultAppname, actionTypeVersion)
 	}
 
 	// Check global arguments:
@@ -151,7 +151,6 @@ func init() {
 	if *flagAppname == "" {
 		*flagAppname = defaultAppname
 	}
-
 
 	// determine command/subcommand
 	commandArg = ""
@@ -364,30 +363,35 @@ func main() {
 		w.Flush()
 
 	case actionTypeUpdate:
-		// parse command-specific args
-		updateCmd.Parse(args[1:])
+		maskedemail := strings.TrimSpace(args[1])
 
-		maskedemail := strings.TrimSpace(*flagUpdateEmail)
+		// parse command-specific args
+		updateCmd.Parse(args[2:])
+
 		domain := strings.TrimSpace(*flagUpdateDomain)
 		description := strings.TrimSpace(*flagUpdateDescription)
-
-		// email arg is required
-		if !isFlagPassed(*updateCmd, flagNameEmail) || (maskedemail == "") {
-			updateCmd.Usage()
-			os.Exit(1)
-		}
 
 		session, err := client.Session()
 		if err != nil {
 			log.Fatalf("initializing session: %v", err)
 		}
 
-		fields := pkg.NewUpdateFields(isFlagPassed(*updateCmd, flagNameDomain),
-									  domain,
-									  isFlagPassed(*updateCmd, flagNameDesc),
-									  description)
+		opts := []pkg.UpdateOption{}
+		if isFlagPassed(*updateCmd, flagNameDomain) {
+			opts = append(opts, pkg.WithUpdateDomain(domain))
+		}
 
-		_, err = client.UpdateInfo(session, *flagAccountID, maskedemail, fields)
+		if isFlagPassed(*updateCmd, flagNameDesc) {
+			opts = append(opts, pkg.WithUpdateDescription(description))
+		}
+
+		if len(opts) == 0 {
+			log.Println("no update options specified")
+			updateCmd.Usage()
+			os.Exit(1)
+		}
+
+		_, err = client.UpdateInfo(session, *flagAccountID, maskedemail, opts...)
 		if err != nil {
 			log.Fatalf("error updating masked email: %v", err)
 		}
