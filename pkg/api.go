@@ -146,6 +146,7 @@ func (client *Client) CreateMaskedEmail(
 	domain string,
 	enabled bool,
 	description string,
+	emailPrefix string,
 ) (*MaskedEmail, error) {
 	state := ""
 	if enabled {
@@ -159,7 +160,7 @@ func (client *Client) CreateMaskedEmail(
 
 	mc := MethodCall{
 		MethodName: "MaskedEmail/set",
-		Payload:    NewMethodCallCreate(accID, client.appName, domain, state, description),
+		Payload:    NewMethodCallCreate(accID, client.appName, domain, state, description, emailPrefix),
 		Payload2:   "0",
 	}
 
