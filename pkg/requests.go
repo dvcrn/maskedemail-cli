@@ -59,6 +59,7 @@ type CreatePayload struct {
 	Domain      string `json:"forDomain"`
 	State       string `json:"state,omitempty"`
 	Description string `json:"description"`
+	EmailPrefix string `json:"emailPrefix"`
 }
 
 type MethodCallCreate struct {
@@ -103,7 +104,8 @@ func WithUpdateDescription(desc string) UpdateOption {
 // appName is the name to identify the app that created the maskedemail.
 // domain is the label to identify where the email is intended for.
 // description is a description of the masked email
-func NewMethodCallCreate(accID, appName, domain string, state string, description string) MethodCallCreate {
+// emailPrefix is the prefix for the masked email
+func NewMethodCallCreate(accID, appName, domain string, state string, description string, emailPrefix string) MethodCallCreate {
 	mesp := MethodCallCreate{}
 	mesp.AccountID = accID
 	mesp.Create = map[string]CreatePayload{
@@ -111,6 +113,7 @@ func NewMethodCallCreate(accID, appName, domain string, state string, descriptio
 			Domain:      domain,
 			State:       state,
 			Description: description,
+			EmailPrefix: emailPrefix,
 		},
 	}
 

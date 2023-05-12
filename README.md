@@ -38,7 +38,7 @@ Flags:
       the token to authenticate with (or MASKEDEMAIL_TOKEN env)
 
 Commands:
-  maskedemail-cli create [-domain "<domain>"] [-desc "<description>"] [-enabled=true|false (default true)]
+  maskedemail-cli create [-domain "<domain>"] [-desc "<description>"] [-prefix "<prefix>"] [-enabled=true|false (default true)]
   maskedemail-cli list [-show-deleted] [-all-fields]
   maskedemail-cli enable <maskedemail>
   maskedemail-cli disable <maskedemail>

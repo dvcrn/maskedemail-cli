@@ -27,6 +27,7 @@ const (
 	flagNameEmail         string = "email"
 	flagNameDomain        string = "domain"
 	flagNameDesc          string = "desc"
+	flagNamePrefix        string = "prefix"
 	flagNameEnabled       string = "enabled"
 	flagNameShowDeleted   string = "show-deleted"
 	flagNameShowAllFields string = "all-fields"
@@ -64,6 +65,7 @@ var flagShowAllFields = listCmd.Bool(flagNameShowAllFields, false, "show all mas
 var createCmd = flag.NewFlagSet(actionTypeCreate, flag.ExitOnError)
 var flagCreateDomain = createCmd.String(flagNameDomain, "", "domain for the masked email (optional)")
 var flagCreateDescription = createCmd.String(flagNameDesc, "", "description for the masked email (optional)")
+var flagCreateEmailPrefix = createCmd.String(flagNamePrefix, "", "prefix for the masked email (optional)")
 var flagCreateEnabled = createCmd.Bool(flagNameEnabled, true, "is masked email enabled (true|false)")
 
 // flags for update command
@@ -103,8 +105,8 @@ func init() {
 		fmt.Println("Commands:")
 
 		// create
-		fmt.Printf("  %s %s [-%s \"<domain>\"] [-%s \"<description>\"] [-%s=true|false (default true)]\n",
-			defaultAppname, actionTypeCreate, flagNameDomain, flagNameDesc, flagNameEnabled)
+		fmt.Printf("  %s %s [-%s \"<domain>\"] [-%s \"<description>\"] [-%s \"<prefix>\"] [-%s=true|false (default true)]\n",
+			defaultAppname, actionTypeCreate, flagNameDomain, flagNameDesc, flagNamePrefix, flagNameEnabled)
 
 		// list
 		fmt.Printf("  %s %s [-%s] [-%s]\n",
@@ -238,13 +240,14 @@ func main() {
 
 		domain := strings.TrimSpace(*flagCreateDomain)
 		description := strings.TrimSpace(*flagCreateDescription)
+		emailPrefix := strings.TrimSpace(*flagCreateEmailPrefix)
 
 		session, err := client.Session()
 		if err != nil {
 			log.Fatalf("initializing session: %v", err)
 		}
 
-		createRes, err := client.CreateMaskedEmail(session, *flagAccountID, domain, *flagCreateEnabled, description)
+		createRes, err := client.CreateMaskedEmail(session, *flagAccountID, domain, *flagCreateEnabled, description, emailPrefix)
 		if err != nil {
 			log.Fatalf("error creating masked email: %v", err)
 		}
