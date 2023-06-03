@@ -136,7 +136,7 @@ func init() {
 		fmt.Printf("  %s %s\n",
 			defaultAppname, actionTypeVersion)
 	}
-	
+
 	// determine command/subcommand
 	commandArg = ""
 	if len(args) > 0 {
@@ -324,9 +324,9 @@ func main() {
 			log.Fatalf("initializing session: %v", err)
 		}
 
-		maskedEmails, err := client.GetAllMaskedEmails(session, *flagAccountID)
+		maskedEmails, err := client.GetAllMaskedEmails(session, *flagAccountID, *flagShowDeleted)
 		if err != nil {
-			log.Fatalf("err while creating maskedemail: %v", err)
+			log.Fatalf("err while getting maskedemails: %v", err)
 		}
 
 		w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
@@ -340,11 +340,6 @@ func main() {
 
 		// display each masked email
 		for _, email := range maskedEmails {
-			// skip deleted masked emails unless flag to show is passed
-			if email.State == "deleted" && !*flagShowDeleted {
-				continue
-			}
-
 			// HACK: trim space here is for hack to deal with possible empty strings
 			if *flagShowAllFields {
 				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n",

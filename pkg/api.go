@@ -242,7 +242,7 @@ func (client *Client) LookupMaskedEmailID(
 	accID string,
 	email string,
 ) (string, error) {
-	allAliases, err := client.GetAllMaskedEmails(session, accID)
+	allAliases, err := client.GetAllMaskedEmails(session, accID, true)
 	if err != nil {
 		return "", err
 	}
@@ -326,6 +326,7 @@ func (client *Client) UpdateInfo(
 func (client *Client) GetAllMaskedEmails(
 	session Session,
 	accID string,
+	includeDeleted bool,
 ) ([]*MaskedEmail, error) {
 	accID, err := client.accIDOrDefault(session, accID)
 	if err != nil {
@@ -357,5 +358,15 @@ func (client *Client) GetAllMaskedEmails(
 		return nil, err
 	}
 
-	return pl.List, nil
+	out := []*MaskedEmail{}
+	for _, item := range pl.List {
+		// skip deleted masked emails unless flag to show is passed
+		if item.State == "deleted" && !includeDeleted {
+			continue
+		}
+
+		out = append(out, item)
+	}
+
+	return out, nil
 }
