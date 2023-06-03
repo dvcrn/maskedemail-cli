@@ -144,9 +144,9 @@ func (client *Client) CreateMaskedEmail(
 	session Session,
 	accID string,
 	domain string,
-	enabled bool,
 	description string,
 	emailPrefix string,
+	enabled bool,
 ) (*MaskedEmail, error) {
 	state := ""
 	if enabled {

@@ -247,7 +247,7 @@ func main() {
 			log.Fatalf("initializing session: %v", err)
 		}
 
-		createRes, err := client.CreateMaskedEmail(session, *flagAccountID, domain, *flagCreateEnabled, description, emailPrefix)
+		createRes, err := client.CreateMaskedEmail(session, *flagAccountID, domain, description, emailPrefix, *flagCreateEnabled)
 		if err != nil {
 			log.Fatalf("error creating masked email: %v", err)
 		}
