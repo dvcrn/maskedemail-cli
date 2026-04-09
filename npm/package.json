@@ -1,0 +1,18 @@
+{
+  "name": "maskedemail-cli",
+  "version": "0.1.0",
+  "description": "Release package for maskedemail CLI",
+  "scripts": {
+    "postinstall": "node postinstall.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "bin": {
+    "maskedemail": "index.js",
+    "maskedemail-cli": "index.js"
+  },
+  "dependencies": {
+    "semver": "^7.7.4"
+  }
+}

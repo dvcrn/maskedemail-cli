@@ -6,14 +6,20 @@ CLI to create Fastmail Masked Emails for whenever you need to
 
 ## Setup
 
-```
+```sh
 go get github.com/dvcrn/maskedemail-cli
 ```
 
 or newer Go versions
 
-```
+```sh
 go install github.com/dvcrn/maskedemail-cli@latest
+```
+
+or via npm
+
+```sh
+npm install -g maskedemail-cli
 ```
 
 ### Authentication
@@ -67,6 +73,28 @@ _Note that these are based on an earlier version of the CLI._
 - [Siri Shortcut](https://www.icloud.com/shortcuts/973a2453b95d4dab97db950260283f4d) to disable the masked email of the currently selected message in Apple Mail on macOS
 - [maskedemail-js](https://github.com/dvcrn/maskedemail-js): Node package ready to import, backed by this CLI compiled to wasm
 - [Masked Email Manager iOS App](https://apps.apple.com/us/app/masked-email-manager/id6443853807): iOS App backed by this CLI compiled to GopherJS
+
+## Releasing
+
+GitHub release artifacts are built with GoReleaser via `.goreleaser.yml` and `.github/workflows/release.yml`.
+
+The npm wrapper package lives in `npm/` and downloads the matching GitHub release asset during `npm install`.
+Before publishing, make sure:
+
+1. `npm/package.json` version matches the Git tag you will release
+2. you create and push that tag (for example `v0.1.0`)
+3. the GitHub release workflow finishes successfully
+4. you publish the npm package from `npm/`
+
+Example:
+
+```sh
+git tag v0.1.0
+git push origin v0.1.0
+cd npm && npm publish
+```
+
+For local work in `npm/` before a matching GitHub release exists, you can skip the binary download step with `MASKEDEMAIL_CLI_SKIP_POSTINSTALL=1`.
 
 ## License
 

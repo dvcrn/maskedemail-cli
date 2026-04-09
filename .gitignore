@@ -1,1 +1,5 @@
 bin/
+dist/
+npm/node_modules/
+npm/maskedemail-cli
+npm/maskedemail-cli.exe
