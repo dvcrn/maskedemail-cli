@@ -1,0 +1,14 @@
+[tools]
+goreleaser = "2.13.3"
+
+[tasks.goreleaser_snapshot]
+description = "Build CLI artifacts via GoReleaser (snapshot)"
+run = "goreleaser release --snapshot --clean --config .goreleaser.yml"
+
+[tasks.goreleaser_release]
+description = "Publish GitHub Release via GoReleaser"
+run = "goreleaser release --clean --config .goreleaser.yml"
+
+[tasks.release]
+description = "Alias for goreleaser_release"
+depends = ["goreleaser_release"]
