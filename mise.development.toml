@@ -1,24 +1,5 @@
 [tools]
-go = "1.18"
-node = "20"
-
-[tasks.fix]
-description = "Auto-applies Golang fixes"
-run = "go fix ./..."
-
-[tasks.format]
-description = "Run go fix, then format Go code"
-depends = ["fix"]
-run = "go fmt ./..."
-
-[tasks.build]
-description = "Build the application binary"
-depends = ["fix"]
-run = "go build -o maskedemail-cli ."
-
-[tasks.test]
-description = "Run all tests"
-run = "go test ./..."
+goreleaser = "2.13.3"
 
 [tasks.goreleaser_snapshot]
 description = "Build CLI artifacts via GoReleaser (snapshot)"
