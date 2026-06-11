@@ -397,7 +397,8 @@ func main() {
 		fmt.Printf("updated %s\n", maskedemail)
 
 	default:
-		fmt.Println("action not found\n")
+		fmt.Println("action not found")
+		fmt.Println()
 		flag.Usage()
 		os.Exit(1)
 	}

@@ -55,7 +55,7 @@ const PKG = (() => {
       process.exitCode = 1;
     });
   } catch (err) {
-    console.error(err.message);
+    console.error(`maskedemail-cli: failed to install binary: ${err.message}`);
     process.exit(1);
   }
 })();

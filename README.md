@@ -4,22 +4,24 @@ CLI to create Fastmail Masked Emails for whenever you need to
 
 ![showcase](./showcase.gif)
 
-## Setup
+## Installation
 
-```sh
-go get github.com/dvcrn/maskedemail-cli
-```
-
-or newer Go versions
-
-```sh
-go install github.com/dvcrn/maskedemail-cli@latest
-```
-
-or via npm
+### With npm
 
 ```sh
 npm install -g maskedemail-cli
+```
+
+### With mise
+
+```sh
+mise use -g go:github.com/dvcrn/maskedemail-cli@latest
+```
+
+### With Go
+
+```sh
+go install github.com/dvcrn/maskedemail-cli@latest
 ```
 
 ### Authentication
