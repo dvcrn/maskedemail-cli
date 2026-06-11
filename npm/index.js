@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const { spawn } = require("child_process");
 
-const { ensureInstalled } = require("./postinstall");
+const { installBinary } = require("./postinstall");
 const { startUpdateCheck } = require("./update_check");
 
 const exe = process.platform === "win32" ? "maskedemail-cli.exe" : "maskedemail-cli";
@@ -22,7 +22,7 @@ const PKG = (() => {
     if (!fs.existsSync(binPath)) {
       console.error(`Binary not found: ${binPath}`);
       console.error("Attempting to download it now...");
-      await ensureInstalled();
+      await installBinary();
     }
 
     if (!fs.existsSync(binPath)) {

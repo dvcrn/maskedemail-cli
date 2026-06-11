@@ -146,7 +146,7 @@ function ensureExecutable(binPath) {
   }
 }
 
-async function ensureInstalled({ log = console.log } = {}) {
+async function installBinary({ log = console.log } = {}) {
   if (isTruthyEnv(SKIP_POSTINSTALL_ENV)) {
     log(`postinstall: skipping binary download because ${SKIP_POSTINSTALL_ENV} is set`);
     return null;
@@ -207,7 +207,7 @@ async function ensureInstalled({ log = console.log } = {}) {
 
 async function main() {
   try {
-    await ensureInstalled();
+    await installBinary();
   } catch (err) {
     console.error(`postinstall error: ${err.message}`);
     process.exit(1);
@@ -219,6 +219,6 @@ if (require.main === module) {
 }
 
 module.exports = {
-  ensureInstalled,
+  installBinary,
   getTargetInfo,
 };
