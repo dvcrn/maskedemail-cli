@@ -11,4 +11,4 @@ run = "goreleaser release --clean --config .goreleaser.yml"
 
 [tasks.release]
 description = "Alias for goreleaser_release"
-run = "mise run goreleaser_release"
+depends = ["goreleaser_release"]
