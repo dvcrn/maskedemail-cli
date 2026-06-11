@@ -8,9 +8,9 @@ description = "Auto-applies Golang fixes"
 run = "go fix ./..."
 
 [tasks.format]
-description = "Run go fix, then format code with goimports"
+description = "Run go fix, then format Go code"
 depends = ["fix"]
-run = 'find . -name "*.go" -type f -exec go tool goimports -w {} +'
+run = "go fmt ./..."
 
 [tasks.build]
 description = "Build the application binary"
